@@ -1,0 +1,496 @@
+{
+    //
+    // --------------------
+    //
+    // *** COMMIT CONFIG ***
+    //
+    // --------------------
+    //
+    "commit-lint.types": [
+        {
+            "label": "build",
+            "detail": "Development changes related to the build system"
+        },
+        {
+            "label": "i18n",
+            "detail": "Changes related to localization and internationalization"
+        },
+        {
+            "label": "ci",
+            "detail": "Development changes related to the continuous integration and deployment system"
+        },
+        {
+            "label": "docs",
+            "detail": "Documentation changes related to the project"
+        },
+        {
+            "label": "feat",
+            "detail": "Production changes related to new backward-compatible abilities or functionality"
+        },
+        {
+            "label": "fix",
+            "detail": "Production changes related to backward-compatible bug fixes"
+        },
+        {
+            "label": "perf",
+            "detail": "Production changes related to backward-compatible performance improvements"
+        },
+        {
+            "label": "refactor",
+            "detail": "Development changes related to modifying the codebase"
+        },
+        {
+            "label": "style",
+            "detail": "Development changes related to styling"
+        },
+        {
+            "label": "assets",
+            "detail": "Adding or modification of assets not depending of code"
+        },
+        {
+            "label": "tooling",
+            "detail": "Adding or modification of packages or tooling-related code"
+        },
+        {
+            "label": "test",
+            "detail": "Development changes related to tests"
+        },
+        {
+            "label": "repo",
+            "detail": "Changes relevant to the repository config, ownership and settings"
+        }
+    ],
+    //
+    // --------------------
+    //
+    // *** TODO CONFIG ***
+    //
+    // --------------------
+    //
+    //  ### General Settings ###
+    "todo-tree.tree.autoRefresh": true,
+    "todo-tree.tree.buttons.export": true,
+    "todo-tree.filtering.ignoreGitSubmodules": true,
+    "todo-tree.regex.regex": "(//|#|<!--|;|/\\*\\s\\*\\*\\*|^|^\\s*(-|\\d+.))\\s*($TAGS)",
+    "todo-tree.filtering.excludeGlobs": [
+        "**/node_modules",
+        "**/vendor/",
+        "**/.git",
+        "**/.expo",
+        "**/build",
+        "**/dist",
+        "**/out",
+        "**/.vscode",
+        "**/coverage",
+        "**/db",
+        "**/package-lock.json",
+        "**/docsDependencies"
+    ],
+    //  ### UI ###
+    "todo-tree.tree.showCountsInTree": true,
+    "todo-tree.tree.showBadges": true,
+    "todo-tree.highlights.enabled": false,
+    "todo-tree.general.statusBar": "top three",
+    "todo-tree.highlights.customHighlight": {
+        "FIXME": {
+            "icon": "gear",
+            "iconColour": "#777777",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "FIXME:Major": {
+            "icon": "flame",
+            "iconColour": "#994444",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "FIXME:Minor": {
+            "icon": "flame",
+            "iconColour": "#449999",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "FIXME:Patch": {
+            "icon": "flame",
+            "iconColour": "#BBBBBB",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "TODO": {
+            "icon": "pencil",
+            "iconColour": "#777777",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "TODO:Major": {
+            "icon": "checklist",
+            "iconColour": "#994444",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "TODO:Minor": {
+            "icon": "checklist",
+            "iconColour": "#449999",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "TODO:Patch": {
+            "icon": "checklist",
+            "iconColour": "#BBBBBB",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "BUG": {
+            "icon": "tag",
+            "iconColour": "#777777",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "BUG:Major": {
+            "icon": "bug",
+            "iconColour": "#994444",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "BUG:Minor": {
+            "icon": "bug",
+            "iconColour": "#449999",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "BUG:Patch": {
+            "icon": "bug",
+            "iconColour": "#BBBBBB",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "HACK": {
+            "icon": "issue-opened",
+            "iconColour": "#777777",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "HACK:Major": {
+            "icon": "issue-opened",
+            "iconColour": "#994444",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "HACK:Minor": {
+            "icon": "issue-opened",
+            "iconColour": "#449999",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "HACK:Patch": {
+            "icon": "issue-opened",
+            "iconColour": "#BBBBBB",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "CHECKTHIS": {
+            "icon": "info",
+            "iconColour": "#ffffff",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "XXX": {
+            "icon": "unverified",
+            "iconColour": "#ff33ff",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "?": {
+            "icon": "search",
+            "iconColour": "#2fc3cf",
+            "gutterIcon": true,
+            "hideFromStatusBar": false,
+            "hideFromTree": false
+        },
+        "*": {
+            "icon": "info",
+            "iconColour": "#ffffff",
+            "gutterIcon": false,
+            "hideFromStatusBar": true,
+            "hideFromTree": false
+        }
+    },
+    //  ### Tags ###
+    "todo-tree.general.tagGroups": {
+        "TODO": [
+            "TODO",
+            "**TODO**",
+            "***TODO",
+            "% TODO",
+            "# TODO",
+            "- [ ]",
+            "[ ]",
+            "// TODO"
+        ],
+        "TODO:Major": [
+            "TODO:Major",
+            "**TODO:Major**",
+            "***TODO:Major",
+            "% TODO:Major",
+            "# TODO:Major",
+            "// TODO:Major"
+        ],
+        "TODO:Minor": [
+            "TODO:Minor",
+            "**TODO:Minor**",
+            "***TODO:Minor",
+            "% TODO:Minor",
+            "# TODO:Minor",
+            "// TODO:Minor"
+        ],
+        "TODO:Patch": [
+            "TODO:Patch",
+            "**TODO:Patch**",
+            "***TODO:Patch",
+            "% TODO:Patch",
+            "# TODO:Patch",
+            "// TODO:Patch"
+        ],
+        "BUG": ["BUG", "**BUG**", "***BUG", "% BUG", "# BUG", "// BUG"],
+        "BUG:Major": [
+            "BUG:Major",
+            "**BUG:Major**",
+            "***BUG:Major",
+            "# BUG:Major",
+            "% BUG:Major",
+            "// BUG:Major"
+        ],
+        "BUG:Minor": [
+            "BUG:Minor",
+            "**BUG:Minor**",
+            "***BUG:Minor",
+            "# BUG:Minor",
+            "% BUG:Minor",
+            "// BUG:Minor"
+        ],
+        "BUG:Patch": [
+            "BUG:Patch",
+            "**BUG:Patch**",
+            "***BUG:Patch",
+            "% BUG:Patch",
+            "# BUG:Patch",
+            "// BUG:Patch"
+        ],
+        "FIXME": [
+            "XXX",
+            "***XXX",
+            "**XXX**",
+            "# XXX",
+            "% XXX",
+            "// XXX",
+            "FIXME",
+            "**FIXME**",
+            "***FIXME",
+            "% FIXME",
+            "# FIXME",
+            "// FIXME"
+        ],
+        "FIXME:Major": [
+            "FIXME:Major",
+            "**FIXME:Major**",
+            "***FIXME:Major",
+            "# FIXME:Major",
+            "% FIXME:Major",
+            "// FIXME:Major"
+        ],
+        "FIXME:Minor": [
+            "FIXME:Minor",
+            "**FIXME:Minor**",
+            "***FIXME:Minor",
+            "# FIXME:Minor",
+            "% FIXME:Minor",
+            "// FIXME:Minor"
+        ],
+        "FIXME:Patch": [
+            "FIXME:Patch",
+            "**FIXME:Patch**",
+            "***FIXME:Patch",
+            "# FIXME:Patch",
+            "% FIXME:Patch",
+            "// FIXME:Patch"
+        ],
+        "HACK": ["HACK", "**HACK**", "***HACK", "% HACK", "# HACK", "// HACK"],
+        "HACK:Major": [
+            "HACK:Major",
+            "**HACK:Major**",
+            "***HACK:Major",
+            "# HACK:Major",
+            "% HACK:Major",
+            "// HACK:Major"
+        ],
+        "HACK:Minor": [
+            "HACK:Minor",
+            "**HACK:Minor**",
+            "***HACK:Minor",
+            "# HACK:Minor",
+            "% HACK:Minor",
+            "// HACK:Minor"
+        ],
+        "HACK:Patch": [
+            "HACK:Patch",
+            "**HACK:Patch**",
+            "***HACK:Patch",
+            "# HACK:Patch",
+            "% HACK:Patch",
+            "// HACK:Patch"
+        ],
+        "?": [
+            "?",
+            "% ?",
+            "* ?",
+            "**?**",
+            "# ?",
+            "// ?",
+            "CHECKTHIS",
+            "***CHECKTHIS",
+            "**CHECKTHIS**",
+            "% CHECKTHIS",
+            "# CHECKTHIS",
+            "// CHECKTHIS"
+        ],
+        "*": ["***", "% ***", "# ***", "* ***", "// ***"]
+    },
+    "todo-tree.general.tags": [
+        "BUG",
+        "BUG:Major",
+        "BUG:Minor",
+        "BUG:Patch",
+        "**BUG:Major**",
+        "***BUG:Major",
+        "**BUG:Minor**",
+        "***BUG:Minor",
+        "**BUG:Patch**",
+        "***BUG:Patch",
+        "% BUG",
+        "% BUG:Major",
+        "% BUG:Minor",
+        "% BUG:Patch",
+        "# BUG",
+        "# BUG:Major",
+        "# BUG:Minor",
+        "# BUG:Patch",
+        "// BUG",
+        "// BUG:Major",
+        "// BUG:Minor",
+        "// BUG:Patch",
+        "HACK",
+        "HACK:Major",
+        "HACK:Minor",
+        "HACK:Patch",
+        "***HACK",
+        "**HACK:Major**",
+        "***HACK:Major",
+        "**HACK:Minor**",
+        "***HACK:Minor",
+        "**HACK:Patch**",
+        "***HACK:Patch",
+        "% HACK",
+        "% HACK:Major",
+        "% HACK:Minor",
+        "% HACK:Patch",
+        "# HACK",
+        "# HACK:Major",
+        "# HACK:Minor",
+        "# HACK:Patch",
+        "// HACK",
+        "// HACK:Major",
+        "// HACK:Minor",
+        "// HACK:Patch",
+        "FIXME",
+        "FIXME:Major",
+        "FIXME:Minor",
+        "FIXME:Patch",
+        "**FIXME**",
+        "***FIXME",
+        "**FIXME:Major**",
+        "***FIXME:Major",
+        "**FIXME:Minor**",
+        "***FIXME:Minor",
+        "**FIXME:Patch**",
+        "***FIXME:Patch",
+        "% FIXME",
+        "% FIXME:Major",
+        "% FIXME:Minor",
+        "% FIXME:Patch",
+        "# FIXME",
+        "# FIXME:Major",
+        "# FIXME:Minor",
+        "# FIXME:Patch",
+        "// FIXME",
+        "// FIXME:Major",
+        "// FIXME:Minor",
+        "// FIXME:Patch",
+        "TODO",
+        "TODO:Major",
+        "TODO:Minor",
+        "TODO:Patch",
+        "**TODO**",
+        "***TODO",
+        "**TODO:Major**",
+        "***TODO:Major",
+        "**TODO:Minor**",
+        "***TODO:Minor",
+        "**TODO:Patch**",
+        "***TODO:Patch",
+        "# TODO",
+        "# TODO:Major",
+        "# TODO:Minor",
+        "# TODO:Patch",
+        "% TODO",
+        "% TODO:Major",
+        "% TODO:Minor",
+        "% TODO:Patch",
+        "// TODO",
+        "// TODO:Major",
+        "// TODO:Minor",
+        "// TODO:Patch",
+        "XXX",
+        "% XXX",
+        "// XXX",
+        "***XXX",
+        "**XXX**",
+        "# XXX",
+        "CHECKTHIS",
+        "% CHECKTHIS",
+        "***CHECKTHIS",
+        "**CHECKTHIS**",
+        "// CHECKTHIS",
+        "# CHECKTHIS",
+        "?",
+        "% ?",
+        "# ?",
+        "* ?",
+        "**?**",
+        "// ?",
+        "- [ ]",
+        "- [x]",
+        "***",
+        "% ***",
+        "# ***",
+        "* ***",
+        "// ***"
+    ]
+}
