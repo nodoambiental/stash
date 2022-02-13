@@ -1,0 +1,8 @@
+.husky/
+.vscode/
+coverage/
+tests/
+CODEOWNERS
+commitlint.config.js
+tsconfig.json
+docs/

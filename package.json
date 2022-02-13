@@ -1,0 +1,49 @@
+{
+    "name": "stash",
+    "version": "0.1.0",
+    "description": "Svelte custom store manager",
+    "main": "dist/index.js",
+    "scripts": {
+        "test": "ava",
+        "build": "typedoc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/nodoambiental/stash.git"
+    },
+    "keywords": [
+        "svelte",
+        "store",
+        "node",
+        "typescript"
+    ],
+    "author": "Ágata Ordano",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/nodoambiental/stash/issues"
+    },
+    "homepage": "https://github.com/nodoambiental/stash#readme",
+    "devDependencies": {
+        "@commitlint/cli": "^16.0.1",
+        "@commitlint/config-conventional": "^16.0.0",
+        "@commitlint/cz-commitlint": "^16.0.0",
+        "@types/uuid": "^8.3.4",
+        "ava": "^3.15.0",
+        "chalk": "^5.0.0",
+        "commitizen": "^4.2.4",
+        "husky": "^7.0.4",
+        "typedoc": "^0.22.10",
+        "typescript": "^4.5.4"
+    },
+    "config": {
+        "commitizen": {
+            "path": "@commitlint/cz-commitlint"
+        }
+    },
+    "dependencies": {
+        "localforage": "^1.10.0",
+        "svelte": "^3.44.3",
+        "uuid": "^8.3.2"
+    },
+    "types": "dist/index.d.ts"
+}
