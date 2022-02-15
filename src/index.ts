@@ -49,8 +49,7 @@ export const stashEvent = (options: StashEventDetail): StashEvent =>
     });
 
 /**
- * Stash
- * ---
+ * ### About:
  *
  * @param own Object containing the stash's metadata. See {@link StashOwnData}
  * @param events The events object contains all available events as of {@link stashEvent}.
@@ -83,29 +82,31 @@ export const stashEvent = (options: StashEventDetail): StashEvent =>
  *
  * ### Properties:
  *
- * #### `events`: See {@link Stash.events}
- * #### `entries`: See {@link Stash.entries}
- * #### `own`: See {@link StashOwnData}
+ * #### `events`: See {@link Stash.events}.
+ * #### `entries`: See {@link Stash.entries}.
+ * #### `own`: See {@link StashOwnData}.
  *
  * ---
  *
  * ### Methods:
  *
- * #### `add()`: See {@link Stash.add}
- * #### `remove()`: See {@link Stash.remove}
- * #### `sync()`: See {@link Stash.sync}
- * #### `transform()`: See {@link Stash.transform}
- * #### `set()`: See {@link Stash.set}
+ * #### `add()`: See {@link Stash.add}.
+ * #### `remove()`: See {@link Stash.remove}.
+ * #### `sync()`: See {@link Stash.sync}.
+ * #### `transform()`: See {@link Stash.transform}.
+ * #### `set()`: See {@link Stash.set}.
  *
  * ---
  *
+ * ### Details:
+ *
  * While you create any custom stash you fancy, it is recommended to use the included exposed stashes `sessionStash`
- * and `localStash`. This is because
+ * and `localStash`. This is because they are already implemented and are ready to use, otherwise you'd have to setup,
+ * configuration and initialization.
  */
 export class Stash implements StashImplementation {
     /**
-     * Stash Constructor
-     * ---
+     * ### About:
      *
      * @param own Object containing the stash's metadata.
      * @param own.persistence The persistence parameter defines if the stash should be persisted to local storage.
@@ -157,8 +158,7 @@ export class Stash implements StashImplementation {
     }
 
     /**
-     * Stash `add` method
-     * ---
+     * ### About:
      *
      * @param id The ID of the entry to add. The ID is used as a key to access the entry.
      * @param entryInitializer The initializer is an object containing the initial value of the entry. This value is
@@ -188,6 +188,8 @@ export class Stash implements StashImplementation {
      *
      * ---
      *
+     * ### Details:
+     *
      * Entries are readonly, so you can't directly change, reassign or extend them; if you want to modify the value
      * of an entry, you have to use the `set()` or `transform()` methods. Deletion is made with the `remove()` method.
      */
@@ -210,8 +212,7 @@ export class Stash implements StashImplementation {
     }
 
     /**
-     * Stash `set` method
-     * ---
+     * ### About:
      *
      * @param id The ID of the entry to set. The ID is used as a key to access the entry.
      * @param value The value to set the entry to. This value _has_ to be the same type of the initializer.
@@ -232,6 +233,8 @@ export class Stash implements StashImplementation {
      *
      * ---
      *
+     * ### Details:
+     *
      * Entries are set with the `update()` writable store method:
      *
      * ```typescript
@@ -248,8 +251,7 @@ export class Stash implements StashImplementation {
     }
 
     /**
-     * Stash `transform` method
-     * ---
+     * ### About:
      *
      * @param id The ID of the entry to transform. The ID is used as a key to access the entry.
      * @param transformation The transformation function to apply to the entry.
@@ -271,8 +273,10 @@ export class Stash implements StashImplementation {
      *
      * myStash.transform("myString", (value) => `${value}!!1!11`);
      * myStash.entries.myString.value; // "Hello World!!!1!11"
-     * ```
+     *
      * ---
+     *
+     * ### Details:
      *
      * Transformations always should respect the type of the current value:
      *
@@ -287,8 +291,7 @@ export class Stash implements StashImplementation {
     }
 
     /**
-     * Stash `remove` method
-     * ---
+     * ### About:
      *
      * @param id The ID of the entry to delete. The ID is used as a key to access the entry.
      *
@@ -299,14 +302,14 @@ export class Stash implements StashImplementation {
      * Choose the ID of the entry to delete.
      *
      * ```typescript
-     *
-     *
      * myStash.entries.myString.value; // "Hello World"
      * myStash.delete("myString");
      * myStash.entries.myString?.value; // undefined
-     *
      * ```
+     *
      * ---
+     *
+     * ### Details:
      *
      * Deletions are made using the `delete` operator.
      */
@@ -317,9 +320,6 @@ export class Stash implements StashImplementation {
     }
 
     /**
-     * Stash `sync` method
-     * ---
-     *
      * ### Usage:
      *
      * Call the function. It will check the structure and config of the stash and behave accordingly.
@@ -327,7 +327,10 @@ export class Stash implements StashImplementation {
      * ```typescript
      * myStash.sync();
      * ```
+     *
      * ---
+     *
+     * ### Details:
      *
      * The stash will sync to a local storage entry with the key given by `.own.stashName`
      */
@@ -342,8 +345,7 @@ export class Stash implements StashImplementation {
     }
 
     /**
-     * Stash entries
-     * ---
+     * ### About:
      *
      * This property implements {@link StashRecord}.
      *
@@ -352,6 +354,8 @@ export class Stash implements StashImplementation {
      * - `.value`: The value of the entry.
      * - `.initializer`: The initializer (original value) of the entry.
      * - `.store`: The proper `writable()` store.
+     *
+     * ---
      *
      * ### Usage:
      *
@@ -375,14 +379,13 @@ export class Stash implements StashImplementation {
      *
      * ---
      *
+     * ### Details:
+     *
      * Accessing the store directly is mostly not needed, as the Stash provides methods for handling data.
      */
     readonly entries: Record<string, StashRecord<unknown>>;
 
     /**
-     * Stash events
-     * ---
-     *
      * This property implements {@link AvailableEvents}, which in turn serves to
      * implement {@link AvailableEventNames}
      *
