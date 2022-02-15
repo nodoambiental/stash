@@ -35,7 +35,8 @@ export class Stash implements StashImplementation {
      */
     constructor(
         public readonly persistence: "local" | "session" = "session",
-        public readonly stashId: string = UUID()
+        public readonly stashId: string = UUID(),
+        public readonly initTime: Date = new Date()
     ) {
         this.entries = {};
         this.stashId = stashId;
@@ -58,6 +59,10 @@ export class Stash implements StashImplementation {
             store: writable(entryInitializer),
         };
         this.entries[id] = storeEntry;
+        Object.defineProperty(this.entries, id, {
+            writable: false,
+            configurable: true,
+        });
         this.entries[id].store.subscribe(
             (value) => (this.entries[id].value = value)
         );
@@ -116,23 +121,28 @@ export class Stash implements StashImplementation {
 /**
  * TODO Docs
  */
-export const sessionStash = new Stash();
+export let sessionStash: Stash;
 
 /**
  * TODO Docs
  */
-export let localStash = new Stash("local");
+export let localStash: Stash;
 
 /**
  * TODO Docs
  */
 export const init = async (): Promise<void> => {
-    sessionStash.add("initTime", new Date());
     // HACK We should be using a TS parsing library (like Zod) to test if the type is correct
+    sessionStash = new Stash();
     const init = (await localforage.getItem("localStash")) as Stash;
     if (init) {
         localStash = init ?? new Stash("local");
     }
 
     // TODO Add a listener to sync localStorage() with the global store
+};
+
+export const purge = (): void => {
+    sessionStash = new Stash();
+    localStash = new Stash("local");
 };
