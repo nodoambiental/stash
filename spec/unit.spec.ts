@@ -1,5 +1,6 @@
 // TODO Fix logging
-// TODO Fix localStash having undefined .initTime
+// TODO Module docs
+// TODO Individual test docs
 
 import { writable } from "svelte/store";
 import jasmine from "jasmine";
@@ -7,6 +8,9 @@ import { init, sessionStash, localStash, purge } from "../src";
 import chalk from "chalk";
 chalk.level = 3;
 
+/**
+ * TODO Docs
+ */
 const log = (message: string, requiredLevel: "v" | "vv") => {
     if (requiredLevel === "v") {
         console.log(chalk.hex("#88b1c2")(message));
@@ -19,6 +23,9 @@ const log = (message: string, requiredLevel: "v" | "vv") => {
 // ------------ Session Storage -------------
 // ------------------------------------------
 
+/**
+ * TODO Docs
+ */
 describe("[Stash] (Session:Init)", () => {
     beforeAll(() => {
         init();
@@ -44,6 +51,9 @@ describe("[Stash] (Session:Init)", () => {
     });
 });
 
+/**
+ * TODO Docs
+ */
 describe("[Stash] (Session:Add)", () => {
     beforeAll(() => {
         init();
@@ -108,10 +118,25 @@ describe("[Stash] (Session:Add)", () => {
     });
 });
 
+// TODO [0/9]
+// TODO describe tests for setting a value
+// TODO describe tests for transforming a value
+// TODO describe tests for deleting a value
+// TODO describe tests for not adding a value that already exists
+// TODO describe tests for checking data integrity on both read and modification
+// TODO describe tests for correct type parsing of the data
+// TODO describe tests for adding a value that was previously deleted
+// TODO describe tests for every event firing correctly
+// TODO describe tests for preserving type on a stored value (not change the type of a already stored value)
+// TODO What other tests remain?
+
 // ---------------------------------------
 // ----------- Local Storage -------------
 // ---------------------------------------
 
+/**
+ * TODO Docs
+ */
 describe("[Stash] (Local:Init)", () => {
     beforeAll(() => {
         init();
@@ -123,7 +148,7 @@ describe("[Stash] (Local:Init)", () => {
     });
 
     it("Should have valid init time", () => {
-        expect(localStash.initTime).toBeTruthy(); // FIXME This is undefined
+        expect(localStash.initTime).toBeTruthy();
         expect(localStash.initTime).toBeTruthy();
         expect(localStash.initTime).toBe(localStash.initTime);
         expect(typeof localStash.initTime).toBe(typeof new Date());
@@ -136,3 +161,20 @@ describe("[Stash] (Local:Init)", () => {
         //log(localStash.stashId, "v");
     });
 });
+
+// TODO [0/14]
+// TODO describe tests for adding values
+// TODO describe tests for setting a value
+// TODO describe tests for transforming a value
+// TODO describe tests for deleting a value
+// TODO describe tests for not adding a value that already exists
+// TODO describe tests for checking data preservation on reinitialization
+// TODO describe tests for checking data integrity on both read and modification
+// TODO describe tests for checking data integrity on localforge
+// TODO describe tests for checking correct "database" sync
+// TODO describe tests for correct type parsing of the data
+// TODO describe tests for checking type integrity on parsing data retrieved from localforage
+// TODO describe tests for adding a value that was previously deleted
+// TODO describe tests for every event firing correctly
+// TODO describe tests for preserving type on a stored value (not change the type of a already stored value)
+// TODO What other tests remain?
