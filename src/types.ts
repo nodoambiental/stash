@@ -1,6 +1,10 @@
-import type { Writable } from "svelte/store";
+/**
+ * TODO Docs
+ *
+ * @module TypesModule
+ */
 
-// TODO Module docs
+import type { Writable } from "svelte/store";
 
 /**
  * TODO Docs
@@ -60,6 +64,14 @@ export type AvailableEvents = {
     [K in AvailableEventNames]: StashEvent;
 };
 
+export interface StashOwnData {
+    persistence: "local" | "session";
+    stashName: string;
+    isCustom: boolean;
+    stashId: string;
+    initTime: Date;
+}
+
 /**
  * TODO Docs
  */
@@ -97,17 +109,7 @@ export interface StashImplementation {
     /**
      * TODO Docs
      */
-    persistence: "local" | "session";
-
-    /**
-     * TODO Docs
-     */
-    stashId: string;
-
-    /**
-     * TODO Docs
-     */
-    initTime: Date;
+    own?: StashOwnData;
 
     /**
      * TODO Docs
