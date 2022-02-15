@@ -87,10 +87,30 @@ export interface StashImplementation {
     /**
      * TODO Docs
      */
+    sync(): void;
+
+    /**
+     * TODO Docs
+     */
     entries: Record<string, StashRecord<unknown>>;
 
     /**
      * TODO Docs
      */
     persistence: "local" | "session";
+
+    /**
+     * TODO Docs
+     */
+    stashId: string;
+
+    /**
+     * TODO Docs
+     */
+    initTime: Date;
+
+    /**
+     * TODO Docs
+     */
+    events: AvailableEvents;
 }
