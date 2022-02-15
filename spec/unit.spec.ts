@@ -41,7 +41,9 @@ describe("[Stash] (Session:Init)", () => {
         expect(sessionStash.own.initTime).toBeTruthy();
         expect(sessionStash.own.initTime).toBe(sessionStash.own.initTime);
         expect(sessionStash.own.initTime).toBeTruthy();
-        expect(typeof sessionStash.own.initTime).toBe(typeof new Date());
+        expect(typeof sessionStash.own.initTime).toBe(
+            typeof new Date().toDateString()
+        );
         log(JSON.stringify(sessionStash.own.initTime), "v");
     });
 
@@ -152,7 +154,9 @@ describe("[Stash] (Local:Init)", () => {
         expect(localStash.own.initTime).toBeTruthy();
         expect(localStash.own.initTime).toBeTruthy();
         expect(localStash.own.initTime).toBe(localStash.own.initTime);
-        expect(typeof localStash.own.initTime).toBe(typeof new Date());
+        expect(typeof localStash.own.initTime).toBe(
+            typeof new Date().toDateString()
+        );
         //log(localStash.own.initTime as string, "v");
     });
 

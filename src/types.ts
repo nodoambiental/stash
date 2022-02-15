@@ -69,7 +69,7 @@ export interface StashOwnData {
     stashName: string;
     isCustom: boolean;
     stashId: string;
-    initTime: Date;
+    initTime: string;
 }
 
 /**

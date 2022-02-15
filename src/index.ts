@@ -137,7 +137,7 @@ export class Stash implements StashImplementation {
             persistence: "session",
             stashId: UUID(),
             stashName: "sessionStash",
-            initTime: new Date(),
+            initTime: new Date().toDateString(),
             isCustom: false,
         }
     ) {
@@ -418,7 +418,7 @@ export const init = async (name: string = "localStash"): Promise<void> => {
                 isCustom: name !== "localStash" ? true : false,
                 stashName: name,
                 stashId: UUID(),
-                initTime: new Date(),
+                initTime: new Date().toDateString(),
             });
     }
 };
@@ -433,7 +433,7 @@ export const purge = (): void => {
         isCustom: false,
         stashName: "localStash",
         stashId: UUID(),
-        initTime: new Date(),
+        initTime: new Date().toDateString(),
     });
     localStash.sync();
 };
