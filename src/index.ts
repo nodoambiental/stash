@@ -14,6 +14,7 @@ import {
     AvailableEventNames,
     StashOwnData,
 } from "./types";
+import { deepCopy, deepFreeze } from "./util";
 import localforage from "localforage";
 import PackageConfig from "../package.json";
 import { v4 as UUID } from "uuid";
@@ -24,18 +25,6 @@ localforage.config({
     version: parseInt(PackageConfig.version.split(".").join(""), 10),
     description: "Stash is a simple key-value store for Svelte applications.",
 });
-
-// from https://learntypescript.dev/10/l5-deep-immutable
-function deepFreeze<T>(obj: T) {
-    var propNames = Object.getOwnPropertyNames(obj);
-    for (let name of propNames) {
-        let value = (obj as any)[name];
-        if (value && typeof value === "object") {
-            deepFreeze(value);
-        }
-    }
-    return Object.freeze(obj);
-}
 
 /**
  * TODO Docs
@@ -191,13 +180,66 @@ export class Stash implements StashImplementation {
      * ### Details:
      *
      * Entries are readonly, so you can't directly change, reassign or extend them; if you want to modify the value
-     * of an entry, you have to use the `set()` or `transform()` methods. Deletion is made with the `remove()` method.
+     * of an entry, you have to use the `set()` or `transform()` methods.
+     * Deletion is made with the `remove()` method.
+     *
+     * The data added to every entry will be deep cloned before building the entry, and the initializer deep frozen,
+     * to avoid side effects and unexpected gotchas.
+     * Keep in mind the mutability is only reserved to the `.store` property, and not directly.
      */
     add<T>(id: string, entryInitializer: T): void {
+        /**
+         * TODO
+         *
+         * So, we gonna replace this.
+         * We gonna use Immer to build a new immutable object based on the .value and the transform
+         * or set methods used.
+         *
+         * But we ar not going to just use Immer as a easy way to handle the immutability.
+         * We gonna add a stepId to the storeEntry, so every time a change is made, Immer will
+         * increase the stepId and use that stepId with a prefix as a key inside the entry. This way, all
+         * the previous changes will be recorded and stored, allowed seamless undo and a more precise
+         * timeline of the changes made, not only on bast events but in data.
+         *
+         * This will be achieved by mapping .value as a Proxy to the key that handles the current value, and
+         * by modifying the events to include the stepId for recontstruction if needed in a timeline.
+         *
+         * An example:
+         *
+         * ```typescript
+         * const copiedInitializer = deepCopy(entryInitializer); //or an Immer solution maybe
+         *
+         * const storeEntry: StashRecord<T> = {
+         *  initializer: deepFreeze(copiedInitializer),
+         *  store: writable(copeidInitializer),
+         *  value: new Proxy(data["val-0"], {bla})
+         *  data: {
+         *    stepId: 0, // Maybe one of those fancy UUIDs that are incremental, in any case it should consult a property on the Stash containing the current step. Like `Stash.currentStep`
+         *    "val-0": "<some data>", // This is a immutable copy handled by Immer
+         *  }
+         * }
+         * ```
+         * Then the structure would be
+         *
+         * ```typescript
+         * Stash.entries.myEntry.value = "<some data>"
+         * ```
+         * imagine i change a few things, then the stepId would have grown to, let's say, 7.
+         *  `data` then would contain `stepId: 7` and `"val-7": "<some changed or new data>"`.
+         * Value would still be a Proxy to the `data["val-7"]`. And so on.
+         *
+         * ---
+         *
+         * Another unrealted thing to change may be adding a parameter in the constructor of the Stash to
+         * allow to link a custom `writable()` compatible with svelte's `Writable`. This may be needed anyways,
+         * i don't know how advanced is the tree shaking that Vite/Svelte has, maybe depending as peer here will bloat something.
+         *
+         */
+        const copiedInitializer = deepCopy(entryInitializer);
         const storeEntry: StashRecord<T> = {
-            initializer: entryInitializer,
-            value: entryInitializer,
-            store: writable(entryInitializer),
+            initializer: deepFreeze(copiedInitializer),
+            value: copiedInitializer,
+            store: writable(copiedInitializer),
         };
         this.entries[id] = storeEntry;
         Object.defineProperty(this.entries, id, {
