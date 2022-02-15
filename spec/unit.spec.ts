@@ -1,4 +1,5 @@
 // TODO Fix logging
+// ! Fix local, it's completely broken
 // TODO Module docs
 // TODO Individual test docs
 
@@ -20,7 +21,7 @@ const log = (message: string, requiredLevel: "v" | "vv") => {
 };
 
 // ------------------------------------------
-// ------------ Session Storage -------------
+//   ------------ Session Storage -------------
 // ------------------------------------------
 
 /**
@@ -37,17 +38,17 @@ describe("[Stash] (Session:Init)", () => {
     });
 
     it("Should have valid init time", () => {
-        expect(sessionStash.initTime).toBeTruthy();
-        expect(sessionStash.initTime).toBe(sessionStash.initTime);
-        expect(sessionStash.initTime).toBeTruthy();
-        expect(typeof sessionStash.initTime).toBe(typeof new Date());
-        log(JSON.stringify(sessionStash.initTime), "v");
+        expect(sessionStash.own.initTime).toBeTruthy();
+        expect(sessionStash.own.initTime).toBe(sessionStash.own.initTime);
+        expect(sessionStash.own.initTime).toBeTruthy();
+        expect(typeof sessionStash.own.initTime).toBe(typeof new Date());
+        log(JSON.stringify(sessionStash.own.initTime), "v");
     });
 
     it("Should have a valid stash ID", () => {
-        expect(sessionStash.stashId).toBeTruthy();
-        expect(typeof sessionStash.stashId).toBe("string");
-        //log(sessionStash.stashId, "v");
+        expect(sessionStash.own.stashId).toBeTruthy();
+        expect(typeof sessionStash.own.stashId).toBe("string");
+        //log(sessionStash.own.stashId, "v");
     });
 });
 
@@ -131,7 +132,7 @@ describe("[Stash] (Session:Add)", () => {
 // TODO What other tests remain?
 
 // ---------------------------------------
-// ----------- Local Storage -------------
+//   ----------- Local Storage -------------
 // ---------------------------------------
 
 /**
@@ -148,17 +149,17 @@ describe("[Stash] (Local:Init)", () => {
     });
 
     it("Should have valid init time", () => {
-        expect(localStash.initTime).toBeTruthy();
-        expect(localStash.initTime).toBeTruthy();
-        expect(localStash.initTime).toBe(localStash.initTime);
-        expect(typeof localStash.initTime).toBe(typeof new Date());
-        //log(localStash.initTime as string, "v");
+        expect(localStash.own.initTime).toBeTruthy();
+        expect(localStash.own.initTime).toBeTruthy();
+        expect(localStash.own.initTime).toBe(localStash.own.initTime);
+        expect(typeof localStash.own.initTime).toBe(typeof new Date());
+        //log(localStash.own.initTime as string, "v");
     });
 
     it("Should have a valid stash ID", () => {
-        expect(localStash.stashId).toBeTruthy();
-        expect(typeof localStash.stashId).toBe("string");
-        //log(localStash.stashId, "v");
+        expect(localStash.own.stashId).toBeTruthy();
+        expect(typeof localStash.own.stashId).toBe("string");
+        //log(localStash.own.stashId, "v");
     });
 });
 
