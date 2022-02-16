@@ -4,38 +4,46 @@
  * @module TypesModule
  */
 
+import type { Immutable } from "immer";
 import type { Writable } from "svelte/store";
 
 /**
- * TODO Docs
+ * ### About
+ * ---
+ *
+ * @typeParam T - The type of the value to be stored. If this data will be serialized into local storage, it should be
+ * one of the [types supported by localForage](https://localforage.github.io/localForage/#data-api-setitem).
+ * @param value Immutable value of this entry.
+ * @param timestamp DateString representing the creation date of this entry.
+ * @param step The integer value that represents this entry.
  */
-export interface StashRecord<T> {
-    /**
-     * TODO Docs
-     */
-    readonly initializer: T;
-
-    /**
-     * TODO Docs
-     */
-    store: Writable<T>;
-
-    /**
-     * TODO Docs
-     */
+export type HistoryEntry<T> = {
     value: T;
-}
+    timestamp: string;
+    step: number;
+};
 
 /**
- * TODO Docs
+ * ### About
+ * ---
+ *
+ * @typeParam T - The type of the value to be stored. If this data will be serialized into local storage, it should be
+ * one of the [types supported by localForage](https://localforage.github.io/localForage/#data-api-setitem).
+ * @param history Immutable object that contains every value recorded and some metadata. See {@link HistoryEntry}.
+ * @param value Reference to the current value according to the latest step of the entry.
+ * @param store This parameter represents the immutable [svelte writable store](https://svelte.dev/docs/store#writable_store) that will
+ * be used to store the data in the stash.
+ * @param latest Number that represents the latest step of the entry.
  */
-export enum AvailableEventNames {
-    add = "add",
-    remove = "remove",
-    set = "set",
-    transform = "transform",
-    sync = "sync",
-}
+export type StashRecord<T> = {
+    readonly history: {
+        initializer: Immutable<HistoryEntry<T>>;
+        [x: string]: Immutable<HistoryEntry<T>>;
+    };
+    value: () => Immutable<T>;
+    store: Immutable<Writable<StashRecord<T>["value"]>>;
+    latest: number;
+};
 
 /**
  * TODO Docs
@@ -49,7 +57,17 @@ export interface StashEventDetail {
     /**
      * TODO Docs
      */
-    action: keyof typeof AvailableEventNames;
+    action: keyof CoreStashImplementation;
+
+    /**
+     * TODO Docs
+     */
+    entryId: string;
+
+    /**
+     * TODO Docs
+     */
+    step: number;
 }
 
 /**
@@ -61,21 +79,31 @@ export interface StashEvent extends CustomEvent<StashEventDetail> {}
  * TODO Docs
  */
 export type AvailableEvents = {
-    [K in AvailableEventNames]: StashEvent;
+    [K in keyof CoreStashImplementation]: (
+        entryId: string,
+        step: number
+    ) => StashEvent;
 };
 
+/**
+ * TODO Docs
+ */
 export interface StashOwnData {
-    persistence: "local" | "session";
-    stashName: string;
-    isCustom: boolean;
-    stashId: string;
-    initTime: string;
+    readonly persistence: "local" | "session";
+    readonly stashName: string;
+    readonly isCustom: boolean;
+    readonly stashId: string;
+    readonly initTime: string;
+    step: Immutable<{
+        current: number;
+        initial: number;
+    }>;
 }
 
 /**
  * TODO Docs
  */
-export interface StashImplementation {
+export interface CoreStashImplementation {
     /**
      * TODO Docs
      */
@@ -94,8 +122,13 @@ export interface StashImplementation {
     /**
      * TODO Docs
      */
-    remove(id: string): void;
+    deleteMutable(id: string): void;
+}
 
+/**
+ * TODO Docs
+ */
+export interface StashImplementation extends CoreStashImplementation {
     /**
      * TODO Docs
      */
