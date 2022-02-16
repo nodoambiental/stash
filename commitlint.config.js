@@ -24,6 +24,7 @@ module.exports = {
                 "merge",
             ],
         ],
+        "body-max-line-length": [2, "always", 300],
     },
     prompt: {
         questions: {
