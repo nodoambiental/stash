@@ -2,6 +2,14 @@
  * TODO Docs
  *
  * @module StashModule
+ *
+ * ---
+ * TODO: A thing to change
+ * may be adding a parameter in the constructor of the Stash to
+ * allow to link a custom `writable()` compatible with svelte's `Writable`. This may be needed anyways,
+ * i don't know how advanced is the tree shaking that Vite/Svelte has, maybe depending as whether having svelte
+ * here will bloat something.
+ *
  */
 
 import { writable } from "svelte/store";
@@ -11,10 +19,9 @@ import {
     StashEventDetail,
     StashEvent,
     AvailableEvents,
-    AvailableEventNames,
     StashOwnData,
 } from "./types";
-import { deepCopy, deepFreeze } from "./util";
+import { clone, petrify } from "./util";
 import localforage from "localforage";
 import PackageConfig from "../package.json";
 import { v4 as UUID } from "uuid";
@@ -105,7 +112,7 @@ export class Stash implements StashImplementation {
      * @param events The events object contains all available events as of {@link stashEvent}.
      * This events can be fired arbitrarily by calling `dispatchEvent(Stash.events["eventName"])`.
      * @param entries The entries object contains all entries of the stash, and is initialized as an empty object,
-     * given is a readonly property.
+     * given is a readonly property. See {@link StashRecord}.
      *
      * ---
      *
@@ -129,21 +136,47 @@ export class Stash implements StashImplementation {
             stashName: "sessionStash",
             initTime: new Date().toDateString(),
             isCustom: false,
+            step: {
+                current: 0,
+                initial: 0,
+            },
         }
     ) {
         this.entries = {};
         this.events = {
-            add: stashEvent({ stash: this.own.stashId, action: "add" }),
-            transform: stashEvent({
-                stash: this.own.stashId,
-                action: "transform",
-            }),
-            set: stashEvent({ stash: this.own.stashId, action: "set" }),
-            remove: stashEvent({ stash: this.own.stashId, action: "remove" }),
-            sync: stashEvent({ stash: this.own.stashId, action: "sync" }),
+            add: (entryId: string, step: number) =>
+                stashEvent({
+                    stash: this.own.stashId,
+                    action: "add",
+                    entryId,
+                    step,
+                }),
+            transform: (entryId: string, step: number) =>
+                stashEvent({
+                    stash: this.own.stashId,
+                    action: "transform",
+                    entryId,
+                    step,
+                }),
+            set: (entryId: string, step: number) =>
+                stashEvent({
+                    stash: this.own.stashId,
+                    action: "set",
+                    entryId,
+                    step,
+                }),
+            deleteMutable: (entryId: string, step: number) =>
+                stashEvent({
+                    stash: this.own.stashId,
+                    action: "deleteMutable",
+                    entryId,
+                    step,
+                }),
         };
-        deepFreeze(this.own);
-        deepFreeze(this.events);
+        petrify(this.events);
+    }
+    remove(id: string): void {
+        throw new Error("Method not implemented.");
     }
 
     /**
@@ -188,68 +221,44 @@ export class Stash implements StashImplementation {
      * Keep in mind the mutability is only reserved to the `.store` property, and not directly.
      */
     add<T>(id: string, entryInitializer: T): void {
-        /**
-         * TODO
-         *
-         * So, we gonna replace this.
-         * We gonna use Immer to build a new immutable object based on the .value and the transform
-         * or set methods used.
-         *
-         * But we ar not going to just use Immer as a easy way to handle the immutability.
-         * We gonna add a stepId to the storeEntry, so every time a change is made, Immer will
-         * increase the stepId and use that stepId with a prefix as a key inside the entry. This way, all
-         * the previous changes will be recorded and stored, allowed seamless undo and a more precise
-         * timeline of the changes made, not only on bast events but in data.
-         *
-         * This will be achieved by mapping .value as a Proxy to the key that handles the current value, and
-         * by modifying the events to include the stepId for recontstruction if needed in a timeline.
-         *
-         * An example:
-         *
-         * ```typescript
-         * const copiedInitializer = deepCopy(entryInitializer); //or an Immer solution maybe
-         *
-         * const storeEntry: StashRecord<T> = {
-         *  initializer: deepFreeze(copiedInitializer),
-         *  store: writable(copeidInitializer),
-         *  value: new Proxy(data["val-0"], {bla})
-         *  data: {
-         *    stepId: 0, // Maybe one of those fancy UUIDs that are incremental, in any case it should consult a property on the Stash containing the current step. Like `Stash.currentStep`
-         *    "val-0": "<some data>", // This is a immutable copy handled by Immer
-         *  }
-         * }
-         * ```
-         * Then the structure would be
-         *
-         * ```typescript
-         * Stash.entries.myEntry.value = "<some data>"
-         * ```
-         * imagine i change a few things, then the stepId would have grown to, let's say, 7.
-         *  `data` then would contain `stepId: 7` and `"val-7": "<some changed or new data>"`.
-         * Value would still be a Proxy to the `data["val-7"]`. And so on.
-         *
-         * ---
-         *
-         * Another unrealted thing to change may be adding a parameter in the constructor of the Stash to
-         * allow to link a custom `writable()` compatible with svelte's `Writable`. This may be needed anyways,
-         * i don't know how advanced is the tree shaking that Vite/Svelte has, maybe depending as peer here will bloat something.
-         *
-         */
-        const copiedInitializer = deepCopy(entryInitializer);
+        // Increase the ticker
+        this.tick();
+
+        // Setup the pointer function
+        const initialValue: StashRecord<T>["value"] = () =>
+            storeEntry.history.initializer.value;
+
+        // Get a immutable, reference-less initializer.
+        const copiedInitializer = petrify(entryInitializer);
+
+        // Setup the entry and include it in the stash
         const storeEntry: StashRecord<T> = {
-            initializer: deepFreeze(copiedInitializer),
-            value: copiedInitializer,
-            store: writable(copiedInitializer),
+            latest: this.own.step.current,
+            history: {
+                initializer: {
+                    step: clone(this.own.step.current),
+                    timestamp: new Date().toDateString(),
+                    value: copiedInitializer,
+                },
+            },
+            value: initialValue,
+            store: writable(initialValue),
         };
         this.entries[id] = storeEntry;
+
+        // Mark the entry as readonly (shallow)
         Object.defineProperty(this.entries, id, {
             writable: false,
             configurable: true,
         });
-        this.entries[id].store.subscribe(
-            (value) => (this.entries[id].value = value)
-        );
-        dispatchEvent(this.events.add);
+
+        // Create the subscription that will update the pointer to the real value
+        this.entries[id].store.subscribe((updatedValue) => {
+            this.entries[id].value = updatedValue;
+        });
+
+        // Dispatch the event and sync
+        dispatchEvent(this.events.add(id, this.own.step.current));
         this.sync();
     }
 
@@ -287,8 +296,23 @@ export class Stash implements StashImplementation {
      * make a modification to an existing value, use the `transform()` method instead.
      */
     set<T>(id: string, value: T): void {
-        this.entries[id].store.update(() => value);
-        dispatchEvent(this.events.set);
+        // Setup the pointer function
+        const newPointer = () =>
+            this.entries[id].history[`val${this.own.step.current}`].value;
+
+        //Update pointer
+        this.entries[id].store.update(() => newPointer);
+
+        // Update pointer target
+        this.entries[id].history[`val${this.own.step.current}`] = petrify({
+            value,
+            timestamp: new Date().toDateString(),
+            step: parseInt(this.own.step.current.toString(), 10),
+        });
+
+        // Tick the stash, dispatch events and sync
+        this.tick();
+        dispatchEvent(this.events.set(id, this.own.step.current));
         this.sync();
     }
 
@@ -327,8 +351,24 @@ export class Stash implements StashImplementation {
      * ```
      */
     transform<T>(id: string, transformation: (data: T) => T): void {
-        this.entries[id].store.set(transformation);
-        dispatchEvent(this.events.transform);
+        // Setup the pointer function
+        const newPointer = () =>
+            this.entries[id].history[`val${this.own.step.current}`].value;
+
+        //Update pointer
+        this.entries[id].store.update(() => newPointer);
+
+        // Update pointer target
+        this.entries[id].history[`val${this.own.step.current}`] = petrify({
+            // HACK Add type parsing to the system
+            value: transformation(this.entries[id].value() as T),
+            timestamp: new Date().toDateString(),
+            step: parseInt(this.own.step.current.toString(), 10),
+        });
+
+        // Tick the stash, dispatch events and sync
+        this.tick();
+        dispatchEvent(this.events.transform(id, this.own.step.current));
         this.sync();
     }
 
@@ -354,10 +394,15 @@ export class Stash implements StashImplementation {
      * ### Details:
      *
      * Deletions are made using the `delete` operator.
+     *
+     * Yes, we lied, this is not truly immutable, you can destroy entries as always. Try not to, tho.
+     *
+     * The thing is, you see, the immutable bits are the _contents_ of the entries, not the entries themselves.
+     * Those are just readonly.
      */
-    remove(id: string): void {
+    deleteMutable(id: string): void {
         delete this.entries[id];
-        dispatchEvent(this.events.remove);
+        dispatchEvent(this.events.deleteMutable(id, this.own.step.current));
         this.sync();
     }
 
@@ -382,7 +427,6 @@ export class Stash implements StashImplementation {
                 this.own.isCustom ? this.own.stashId : "localStash",
                 this
             );
-            dispatchEvent(this.events.sync);
         }
     }
 
@@ -436,6 +480,23 @@ export class Stash implements StashImplementation {
      * Check out both of the relevant interfaces.
      */
     events: AvailableEvents;
+
+    /**
+     * TODO Docs
+     */
+    tick(): void {
+        Object.defineProperty(this.own, "step", {
+            writable: true,
+        });
+        const newData: StashOwnData["step"] = {
+            current: this.own.step.current + 1,
+            initial: this.own.step.initial,
+        };
+        this.own.step = newData;
+        Object.defineProperty(this.own, "step", {
+            writable: false,
+        });
+    }
 }
 
 /**
@@ -464,6 +525,10 @@ export const init = async (name: string = "localStash"): Promise<void> => {
                 stashName: name,
                 stashId: UUID(),
                 initTime: new Date().toDateString(),
+                step: {
+                    current: 0,
+                    initial: 0,
+                },
             });
     }
 };
@@ -479,6 +544,10 @@ export const purge = (): void => {
         stashName: "localStash",
         stashId: UUID(),
         initTime: new Date().toDateString(),
+        step: {
+            current: 0,
+            initial: 0,
+        },
     });
     localStash.sync();
 };
