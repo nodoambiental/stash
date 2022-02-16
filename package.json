@@ -48,6 +48,7 @@
         }
     },
     "dependencies": {
+        "immer": "^9.0.12",
         "localforage": "^1.10.0",
         "svelte": "^3.44.3",
         "uuid": "^8.3.2"
