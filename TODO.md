@@ -6,7 +6,6 @@ Project Description
 
 ### Todo
 
-- [ ] add timeline data generation  
 - [ ] add parsing/validating to the lib  
 - [ ] write local tests [0/14]  
 - [ ] write session tests [0/9]  
@@ -18,7 +17,9 @@ Project Description
 
 ### In Progress
 
+- [ ] add timeline data generation  
 
 ### Done ✓
 
+- [x] add immutability  
 
