@@ -13,6 +13,7 @@
         /* Language and Environment */
         "target": "es5" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
         "lib": [
+            "ES2021.String",
             "es2017",
             "es7",
             "es6",
@@ -74,7 +75,7 @@
 
         /* Interop Constraints */
         // "isolatedModules": true,                          /* Ensure that each file can be safely transpiled without relying on other imports. */
-        // "allowSyntheticDefaultImports": true,             /* Allow 'import x from y' when a module doesn't have a default export. */
+        "allowSyntheticDefaultImports": true /* Allow 'import x from y' when a module doesn't have a default export. */,
         "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */,
         // "preserveSymlinks": true,                         /* Disable resolving symlinks to their realpath. This correlates to the same flag in node. */
         "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
@@ -103,17 +104,5 @@
         /* Completeness */
         // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
         "skipLibCheck": true /* Skip type checking all .d.ts files. */
-    },
-    "typedocOptions": {
-        "entryPoints": ["src"],
-        "out": "docs/typedoc",
-        "exclude": ["**/*+(.spec|.e2e).ts"],
-        "json": "docs/typedoc/reflection.json",
-        "pretty": true,
-        "githubPages": false,
-        "emit": "both",
-        "cleanOutputDir": true,
-        "includeVersion": true,
-        "entryPointStrategy": "expand"
     }
 }

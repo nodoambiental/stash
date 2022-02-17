@@ -1,0 +1,14 @@
+{
+    "entryPoints": ["src"],
+    "out": "docs/typedoc",
+    "exclude": ["**/*+(.spec|.e2e).ts"],
+    "json": "docs/typedoc/reflection.json",
+    "pretty": true,
+    "githubPages": false,
+    "emit": "both",
+    "cleanOutputDir": true,
+    "includeVersion": true,
+    "entryPointStrategy": "expand",
+    "includes": "docs/charts/",
+    "readme": "docs/typedoc.md"
+}
