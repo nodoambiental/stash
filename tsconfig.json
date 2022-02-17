@@ -106,9 +106,9 @@
     },
     "typedocOptions": {
         "entryPoints": ["src"],
-        "out": "docs",
+        "out": "docs/typedoc",
         "exclude": ["**/*+(.spec|.e2e).ts"],
-        "json": "docs/typedoc.json",
+        "json": "docs/typedoc/reflection.json",
         "pretty": true,
         "githubPages": false,
         "emit": "both",
