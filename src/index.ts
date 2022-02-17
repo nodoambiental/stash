@@ -3,14 +3,15 @@
  *
  * @module StashModule
  *
- * ---
- * TODO: A thing to change
- * may be adding a parameter in the constructor of the Stash to
- * allow to link a custom `writable()` compatible with svelte's `Writable`. This may be needed anyways,
- * i don't know how advanced is the tree shaking that Vite/Svelte has, maybe depending as whether having svelte
- * here will bloat something.
- *
  */
+
+//  *
+//  * ---
+//  * TODO: A thing to change
+//  * may be adding a parameter in the constructor of the Stash to
+//  * allow to link a custom `writable()` compatible with svelte's `Writable`. This may be needed anyways,
+//  * i don't know how advanced is the tree shaking that Vite/Svelte has, maybe depending as whether having svelte
+//  * here will bloat something.
 
 import { writable } from "svelte/store";
 import {
@@ -175,9 +176,6 @@ export class Stash implements StashImplementation {
         };
         petrify(this.events);
     }
-    remove(id: string): void {
-        throw new Error("Method not implemented.");
-    }
 
     /**
      * ### About:
@@ -224,10 +222,6 @@ export class Stash implements StashImplementation {
         // Increase the ticker
         this.tick();
 
-        // Setup the pointer function
-        const initialValue: StashRecord<T>["value"] = () =>
-            storeEntry.history.initializer.value;
-
         // Get a immutable, reference-less initializer.
         const copiedInitializer = petrify(entryInitializer);
 
@@ -241,8 +235,8 @@ export class Stash implements StashImplementation {
                     value: copiedInitializer,
                 },
             },
-            value: initialValue,
-            store: writable(initialValue),
+            value: () => storeEntry.history.initializer.value,
+            store: writable(() => storeEntry.history.initializer.value),
         };
         this.entries[id] = storeEntry;
 
