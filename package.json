@@ -5,8 +5,9 @@
     "main": "dist/index.js",
     "scripts": {
         "test": "karma start karma.config.js",
-        "build": "typedoc",
-        "build:dry": "tsc"
+        "build:docs:mermaid": "tsc tooling/docs.ts; node tooling/docs.js",
+        "build:docs": "typedoc",
+        "build:dry": "tsc src/**.ts"
     },
     "repository": {
         "type": "git",
@@ -40,6 +41,8 @@
         "karma-typescript": "^5.5.3",
         "mock-local-storage": "^1.1.20",
         "typedoc": "^0.22.10",
+        "typedoc-plugin-extras": "^2.2.3",
+        "typedoc-plugin-inline-sources": "^1.0.1",
         "typedoc-plugin-mdn-links": "^1.0.5",
         "typedoc-plugin-mermaid": "^1.6.0",
         "typedoc-plugin-missing-exports": "^0.22.6",
