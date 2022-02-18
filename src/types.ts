@@ -62,7 +62,7 @@ export interface StashEventDetail {
     /**
      * TODO Docs
      */
-    action: keyof CoreStashImplementation;
+    action: keyof CoreStashImplementation | keyof CustomStashImplementation;
 
     /**
      * TODO Docs
@@ -93,6 +93,16 @@ export type AvailableEvents = {
 /**
  * TODO Docs
  */
+export type CustomAvailableEvents = {
+    [K in keyof CoreCustomStashImplementation]: (
+        entryId: string,
+        step: number
+    ) => StashEvent;
+};
+
+/**
+ * TODO Docs
+ */
 export interface StashOwnData {
     readonly persistence: "local" | "session";
     readonly stashName: string;
@@ -108,7 +118,7 @@ export interface StashOwnData {
 /**
  * TODO Docs
  */
-export interface CoreStashImplementation {
+interface CoreStashImplementation {
     /**
      * TODO Docs
      */
@@ -123,11 +133,16 @@ export interface CoreStashImplementation {
      * TODO Docs
      */
     transform<T>(id: string, transformation: (data: T) => T): void;
+}
 
+/**
+ * TODO Docs
+ */
+interface CoreCustomStashImplementation extends CoreStashImplementation {
     /**
      * TODO Docs
      */
-    deleteMutable(id: string): void;
+    DANGEROUSLY_deleteMutable(id: string): void;
 }
 
 /**
@@ -137,20 +152,19 @@ export interface StashImplementation extends CoreStashImplementation {
     /**
      * TODO Docs
      */
-    sync(): void;
-
-    /**
-     * TODO Docs
-     */
-    entries: Record<string, StashRecord<unknown>>;
+    readonly data: {
+        [x: string]: Pick<StashRecord<unknown>, "value" | "history">;
+    };
 
     /**
      * TODO Docs
      */
     own?: StashOwnData;
-
-    /**
-     * TODO Docs
-     */
-    events: AvailableEvents;
 }
+
+/**
+ * TODO Docs
+ */
+export interface CustomStashImplementation
+    extends StashImplementation,
+        CoreCustomStashImplementation {}
