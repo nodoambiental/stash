@@ -15,3 +15,13 @@ export const clone = <T>(source: T): T => {
 export const petrify = <T>(obj: T): Immutable<T> => {
     return freeze(clone(obj), true) as Immutable<T>;
 };
+
+/**
+ * TODO Docs
+ */
+export const cleanupKey = (key: string) =>
+    key
+        .trim()
+        .replace(/\n+/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/[^\d\w\-_]/g, "");

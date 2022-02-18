@@ -67,7 +67,7 @@ export interface StashEventDetail {
     /**
      * TODO Docs
      */
-    entryId: string;
+    id: string;
 
     /**
      * TODO Docs
@@ -79,26 +79,6 @@ export interface StashEventDetail {
  * TODO Docs
  */
 export interface StashEvent extends CustomEvent<StashEventDetail> {}
-
-/**
- * TODO Docs
- */
-export type AvailableEvents = {
-    [K in keyof CoreStashImplementation]: (
-        entryId: string,
-        step: number
-    ) => StashEvent;
-};
-
-/**
- * TODO Docs
- */
-export type CustomAvailableEvents = {
-    [K in keyof CoreCustomStashImplementation]: (
-        entryId: string,
-        step: number
-    ) => StashEvent;
-};
 
 /**
  * TODO Docs
@@ -168,3 +148,23 @@ export interface StashImplementation extends CoreStashImplementation {
 export interface CustomStashImplementation
     extends StashImplementation,
         CoreCustomStashImplementation {}
+
+/**
+ * TODO Docs
+ */
+export type AvailableEvents = {
+    [K in keyof CoreStashImplementation]: (
+        id: string,
+        step: number
+    ) => StashEvent;
+};
+
+/**
+ * TODO Docs
+ */
+export type CustomAvailableEvents = {
+    [K in keyof CoreCustomStashImplementation]: (
+        id: string,
+        step: number
+    ) => StashEvent;
+};

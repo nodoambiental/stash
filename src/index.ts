@@ -44,10 +44,10 @@ import {
     CustomStashImplementation,
     CustomAvailableEvents,
 } from "./types";
-import { clone, petrify } from "./util";
+import { cleanupKey, clone, petrify } from "./util";
 import localforage from "localforage";
 import PackageConfig from "../package.json";
-import { v4 as UUID } from "uuid";
+import { v4 as uuid } from "uuid";
 
 // Local config
 localforage.config({
@@ -65,7 +65,7 @@ localforage.config({
  * const myEvent = stashEvent({
  *  stash: "someStashId",
  *  action: "add",
- *  entryId,
+ *  id,
  *  step,
  * })
  * ```
@@ -74,16 +74,16 @@ localforage.config({
  *
  * This requires dynamic data, so you need another function in the moment when you're going to fire this, to serve as
  * the collector for the missing data (`.stash` and `.action` are always the same values while inside the same stash,
- * but `.entryId` and `.step` vary on each firing).
+ * but `.id` and `.step` vary on each firing).
  *
  * The transform function should then simply follow:
  *
  * ```typescript
- * type StashEventDetailGenerator = (entryId: string, step: number) => StashEventDetail
- * const stashEventGenerator: StashEventDetailGenerator = (entryId, step) => stashEvent({
+ * type StashEventDetailGenerator = (id: string, step: number) => StashEventDetail
+ * const stashEventGenerator: StashEventDetailGenerator = (id, step) => stashEvent({
  *  stash: "someStashId",
  *  action: "add",
- *  entryId,
+ *  id,
  *  step,
  * })
  * ```
@@ -144,7 +144,7 @@ abstract class BaseStash implements StashImplementation {
      * @param own Object containing the stash's metadata.
      * @param own.persistence The persistence parameter defines if the stash should be persisted to local storage.
      * @param own.stashName The name of the stash, to be used as key for syncing with local storage.
-     * @param own.stashId A UUID v4 string to uniquely identify the stash.
+     * @param own.stashId A uuid v4 string to uniquely identify the stash.
      * @param own.initTime The UNIX timestamp given by `Date()` when the stash was initialized.
      * @param own.isCustom Flag that defines if the current stash is a custom call or managed by this lib.
      * @param own.step Object that tracks both the starting and current "global" step on _this_ Stash.
@@ -166,7 +166,7 @@ abstract class BaseStash implements StashImplementation {
      * ```typescript
      * const stashMetadata = {
      *  persistence: "session",
-     *  stashId: UUID(),
+     *  stashId: uuid(),
      *  stashName: "sessionStash",
      *  initTime: new Date().toDateString(),
      *  isCustom: false,
@@ -181,7 +181,7 @@ abstract class BaseStash implements StashImplementation {
     constructor(
         public readonly own: StashOwnData = {
             persistence: "session",
-            stashId: UUID(),
+            stashId: uuid(),
             stashName: "sessionStash",
             initTime: new Date().toDateString(),
             isCustom: false,
@@ -264,6 +264,9 @@ abstract class BaseStash implements StashImplementation {
      *
      */
     add<T>(id: string, entryInitializer: T): void {
+        // Clean the key input
+        const cleanId = cleanupKey(id);
+
         // Increase the ticker
         this.tick();
 
@@ -284,7 +287,7 @@ abstract class BaseStash implements StashImplementation {
             store: writable(() => storeEntry.records.initializer.value),
             history: [() => storeEntry.records.initializer.value],
         };
-        this.entries[id] = storeEntry;
+        this.entries[cleanId] = storeEntry;
 
         // Mark the entry as readonly (shallow)
         Object.defineProperty(this.entries, id, {
@@ -293,8 +296,8 @@ abstract class BaseStash implements StashImplementation {
         });
 
         // Create the subscription that will update the pointer to the real value
-        this.entries[id].store.subscribe((updatedValue) => {
-            this.entries[id].value = updatedValue;
+        this.entries[cleanId].store.subscribe((updatedValue) => {
+            this.entries[cleanId].value = updatedValue;
         });
 
         // Dispatch the event and sync
@@ -336,22 +339,25 @@ abstract class BaseStash implements StashImplementation {
      * transform function.
      */
     set<T>(id: string, value: T): void {
+        // Clean the key input
+        const cleanId = cleanupKey(id);
+
         // Setup the pointer function
         const newPointer = () =>
-            this.entries[id].records[`val${this.own.step.current}`].value;
+            this.entries[cleanId].records[`val${this.own.step.current}`].value;
 
         //Update pointer
-        this.entries[id].store.update(() => newPointer);
+        this.entries[cleanId].store.update(() => newPointer);
 
         // Update pointer target
-        this.entries[id].records[`val${this.own.step.current}`] = petrify({
+        this.entries[cleanId].records[`val${this.own.step.current}`] = petrify({
             value,
             timestamp: new Date().toDateString(),
             step: parseInt(this.own.step.current.toString(), 10),
         });
 
         // Update history
-        this.entries[id].history.unshift(newPointer);
+        this.entries[cleanId].history.unshift(newPointer);
 
         // Tick the stash, dispatch events and sync
         this.tick();
@@ -400,23 +406,26 @@ abstract class BaseStash implements StashImplementation {
      * ```
      */
     transform<T>(id: string, transformation: (data: T) => T): void {
+        // Clean the key input
+        const cleanId = cleanupKey(id);
+
         // Setup the pointer function
         const newPointer = () =>
-            this.entries[id].records[`val${this.own.step.current}`].value;
+            this.entries[cleanId].records[`val${this.own.step.current}`].value;
 
         //Update pointer
-        this.entries[id].store.update(() => newPointer);
+        this.entries[cleanId].store.update(() => newPointer);
 
         // Update pointer target
-        this.entries[id].records[`val${this.own.step.current}`] = petrify({
+        this.entries[cleanId].records[`val${this.own.step.current}`] = petrify({
             // HACK Add type parsing to the system
-            value: transformation(this.entries[id].value() as T),
+            value: transformation(this.entries[cleanId].value() as T),
             timestamp: new Date().toDateString(),
             step: parseInt(this.own.step.current.toString(), 10),
         });
 
         // Update history
-        this.entries[id].history.unshift(newPointer);
+        this.entries[cleanId].history.unshift(newPointer);
 
         // Tick the stash, dispatch events and sync
         this.tick();
@@ -492,7 +501,7 @@ abstract class BaseStash implements StashImplementation {
     /**
      * TODO Docs
      */
-    protected syncAccessor(entryId: string): void {}
+    protected syncAccessor(id: string): void {}
 }
 
 /**
@@ -532,25 +541,25 @@ export class Stash extends BaseStash implements StashImplementation {
     constructor() {
         super();
         this.events = {
-            add: (entryId: string, step: number) =>
+            add: (id: string, step: number) =>
                 stashEvent({
                     stash: this.own.stashId,
                     action: "add",
-                    entryId,
+                    id,
                     step,
                 }),
-            transform: (entryId: string, step: number) =>
+            transform: (id: string, step: number) =>
                 stashEvent({
                     stash: this.own.stashId,
                     action: "transform",
-                    entryId,
+                    id,
                     step,
                 }),
-            set: (entryId: string, step: number) =>
+            set: (id: string, step: number) =>
                 stashEvent({
                     stash: this.own.stashId,
                     action: "set",
-                    entryId,
+                    id,
                     step,
                 }),
         };
@@ -571,12 +580,15 @@ export class Stash extends BaseStash implements StashImplementation {
      *
      * The stash will sync to a local storage entry under a children object with key `.own.stashName`
      */
-    private sync(entryId: string): void {
+    private sync(id: string): void {
+        // Clean the key input
+        const cleanId = cleanupKey(id);
+
         const dataRecord = {
-            value: this.entries[entryId].value,
-            history: this.entries[entryId].history,
+            value: this.entries[cleanId].value,
+            history: this.entries[cleanId].history,
         };
-        this.data[entryId] = dataRecord;
+        this.data[cleanId] = dataRecord;
         if (this.own.persistence === "local") {
             localforage.setItem(
                 this.own.isCustom ? this.own.stashId : "localStash",
@@ -588,8 +600,8 @@ export class Stash extends BaseStash implements StashImplementation {
     /**
      * TODO Docs
      */
-    protected syncAccessor(entryId: string): void {
-        this.sync(entryId);
+    protected syncAccessor(id: string): void {
+        this.sync(id);
     }
 
     /**
@@ -663,32 +675,32 @@ export class CustomStash
         super(own);
         this.enableDeletion = enableDeletion;
         this.events = {
-            add: (entryId: string, step: number) =>
+            add: (id: string, step: number) =>
                 stashEvent({
                     stash: this.own.stashId,
                     action: "add",
-                    entryId,
+                    id,
                     step,
                 }),
-            transform: (entryId: string, step: number) =>
+            transform: (id: string, step: number) =>
                 stashEvent({
                     stash: this.own.stashId,
                     action: "transform",
-                    entryId,
+                    id,
                     step,
                 }),
-            set: (entryId: string, step: number) =>
+            set: (id: string, step: number) =>
                 stashEvent({
                     stash: this.own.stashId,
                     action: "set",
-                    entryId,
+                    id,
                     step,
                 }),
-            DANGEROUSLY_deleteMutable: (entryId: string, step: number) =>
+            DANGEROUSLY_deleteMutable: (id: string, step: number) =>
                 stashEvent({
                     stash: this.own.stashId,
                     action: "DANGEROUSLY_deleteMutable",
-                    entryId,
+                    id,
                     step,
                 }),
         };
@@ -723,12 +735,15 @@ export class CustomStash
      *
      * The stash will sync to a local storage entry under a children object with key `.own.stashName`
      */
-    public sync(entryId: string): void {
+    public sync(id: string): void {
+        // Clean the key input
+        const cleanId = cleanupKey(id);
+
         const dataRecord = {
-            value: this.entries[entryId].value,
-            history: this.entries[entryId].history,
+            value: this.entries[cleanId].value,
+            history: this.entries[cleanId].history,
         };
-        this.data[entryId] = dataRecord;
+        this.data[cleanId] = dataRecord;
         if (this.own.persistence === "local") {
             localforage.setItem(
                 this.own.isCustom ? this.own.stashId : "localStash",
@@ -740,8 +755,8 @@ export class CustomStash
     /**
      * TODO Docs
      */
-    protected syncAccessor(entryId: string): void {
-        this.sync(entryId);
+    protected syncAccessor(id: string): void {
+        this.sync(id);
     }
 
     /**
@@ -780,8 +795,11 @@ export class CustomStash
      * ```
      */
     public DANGEROUSLY_deleteMutable(id: string): void {
+        // Clean the key input
+        const cleanId = cleanupKey(id);
+
         if (this.enableDeletion) {
-            delete this.entries[id];
+            delete this.entries[cleanId];
             this.event("DANGEROUSLY_deleteMutable", id, this.own.step.current);
             this.syncAccessor(id);
         }
