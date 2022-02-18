@@ -4,7 +4,7 @@
     "description": "Svelte custom store manager",
     "main": "dist/index.js",
     "scripts": {
-        "test": "karma start karma.config.js",
+        "test": "nyc karma start karma.config.js",
         "build:docs:mermaid": "tsc tooling/docs.ts; node tooling/docs.js",
         "build:docs": "typedoc",
         "build:dry": "tsc src/**.ts"
@@ -29,6 +29,7 @@
         "@commitlint/cli": "^16.0.1",
         "@commitlint/config-conventional": "^16.0.0",
         "@commitlint/cz-commitlint": "^16.0.0",
+        "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@types/jasmine": "^3.10.3",
         "@types/uuid": "^8.3.4",
         "chalk": "^5.0.0",
@@ -56,6 +57,7 @@
     "dependencies": {
         "immer": "^9.0.12",
         "localforage": "^1.10.0",
+        "nyc": "^15.1.0",
         "svelte": "^3.44.3",
         "uuid": "^8.3.2"
     },
