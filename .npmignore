@@ -6,3 +6,9 @@ CODEOWNERS
 commitlint.config.js
 tsconfig.json
 docs/
+.markdownlintignore
+.deepsource.toml
+karma.config.json
+TODO.md
+typedoc.json
+.nycrc
