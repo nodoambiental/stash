@@ -5,13 +5,33 @@
  *
  */
 
-//  *
-//  * ---
-//  * TODO: A thing to change
-//  * may be adding a parameter in the constructor of the Stash to
-//  * allow to link a custom `writable()` compatible with svelte's `Writable`. This may be needed anyways,
-//  * i don't know how advanced is the tree shaking that Vite/Svelte has, maybe depending as whether having svelte
-//  * here will bloat something.
+/**
+ * TODO: A thing to add
+ *  Add a parameter in the constructor of the Stash to allow to link a custom `writable()` compatible with
+ * Svelte's `Writable`. This may be needed anyways, as i don't know how advanced is the tree shaking that
+ * Vite/Svelte has, maybe depending as whether having svelte as a dependency here will bloat something.
+ */
+
+/**
+ * TODO: A thing to add (the cooler version)
+ *  Add another method to the Stash to be able to rewind in time the complete state of the whole Stash, up to either
+ * some time (based off timestamps) or a specific step. Maybe also add some way to keep the timeline branches?
+ *
+ * ...Soon this will turn into a cool exercise in DAGs 👀👀👀👀
+ *
+ *  You could've another stash-wide registry that controls in what branch are you, so you can at any time select one
+ * and continue operating there, and the state will be preserved without conflicts (i hope). The only big issue i see here
+ * is how in tarnation you manage merge conflicts without expecting hardcore user input for each conflict. Maybe just offer
+ * a way to select which branch conclicting data is preserved, either "theirs" or "own" (using Git's terminology),
+ * like Git and other SCMs do. Adding this feature would offer an extreme degree of user friendly-ness and robustness
+ * to whatever changes to the state you are doing, and that would allow to experiment easily.
+ *
+ *  The bad part is that besides just tossing some methods to manage this, if i don't think in how to properly assess
+ * the conflics and behavior of the graph (maybe easier using some DAG-managing lib), things can get very messy.
+ *
+ *  Also there would be a need to graph this branches and history, so offering D3 components to be able to represent
+ * the changes will probably be a must.
+ */
 
 import { writable } from "svelte/store";
 import {
@@ -21,6 +41,8 @@ import {
     StashEvent,
     AvailableEvents,
     StashOwnData,
+    CustomStashImplementation,
+    CustomAvailableEvents,
 } from "./types";
 import { clone, petrify } from "./util";
 import localforage from "localforage";
@@ -35,9 +57,38 @@ localforage.config({
 });
 
 /**
- * TODO Docs
+ * @param options Object containing the details that will be in the event when fired. See {@link StashEventDetail}.
+ *
+ * @usage
+ *
+ * ```typescript
+ * const myEvent = stashEvent({
+ *  stash: "someStashId",
+ *  action: "add",
+ *  entryId,
+ *  step,
+ * })
+ * ```
+ *
+ * @details
+ *
+ * This requires dynamic data, so you need another function in the moment when you're going to fire this, to serve as
+ * the collector for the missing data (`.stash` and `.action` are always the same values while inside the same stash,
+ * but `.entryId` and `.step` vary on each firing).
+ *
+ * The transform function should then simply follow:
+ *
+ * ```typescript
+ * type StashEventDetailGenerator = (entryId: string, step: number) => StashEventDetail
+ * const stashEventGenerator: StashEventDetailGenerator = (entryId, step) => stashEvent({
+ *  stash: "someStashId",
+ *  action: "add",
+ *  entryId,
+ *  step,
+ * })
+ * ```
  */
-export const stashEvent = (options: StashEventDetail): StashEvent =>
+const stashEvent = (options: StashEventDetail): StashEvent =>
     new CustomEvent("stash", {
         detail: options,
         bubbles: true,
@@ -47,67 +98,61 @@ export const stashEvent = (options: StashEventDetail): StashEvent =>
 
 /**
  * @param own Object containing the stash's metadata. See {@link StashOwnData}
- * @param events The events object contains all available events as of {@link stashEvent}.
- * This events can be fired arbitrarily by calling `dispatchEvent(Stash.events["eventName"])`.
  * @param entries The entries object contains all entries of the stash, and is initialized as an empty object,
  * given is a readonly property.
  * @param add Adds a new entry to the stash.
- * @param deleteMutable Mutably deletes a entry from the stash.
  * @param set Sets a new value for an entry already present in the stash.
  * @param transform Transforms a value for an entry already present in the stash.
- * @param sync Syncs the stash with local storage.
  * @param tick Increases the step counter.
- *
- *
- * ---
+ * @param event Base function to allow generating events on the implementor classes.
+ * @param syncAccessor Base function to allow access to different kinds of sync depending on the implementation.
  *
  * @usage
  *
+ * TODO
+ *
  * ```typescript
- * const myStash = new Stash();
- * const myLocalStash = new Stash(stashMetadata);
  * ```
  *
  * ---
  *
  * @properties
  *
- * #### `events`: See {@link Stash.events}.
- * #### `entries`: See {@link Stash.entries}.
+ * #### `entries`: See {@link BaseStash.entries}.
+ * #### `data`: See {@link BaseStash.entries}.
  * #### `own`: See {@link StashOwnData}.
  *
  * ---
  *
  * @methods
  *
- * #### `add()`: See {@link Stash.add}.
- * #### `deleteMutable()`: See {@link Stash.deleteMutable}.
- * #### `transform()`: See {@link Stash.transform}.
- * #### `set()`: See {@link Stash.set}.
- * #### `sync()`: See {@link Stash.sync}.
- * #### `tick()`: See {@link Stash.tick}.
+ * #### `add()`: See {@link BaseStash.add}.
+ * #### `transform()`: See {@link BaseStash.transform}.
+ * #### `set()`: See {@link BaseStash.set}.
+ * #### `syncAccessor()`: See {@link BaseStash.sync}.
+ * #### `tick()`: See {@link BaseStash.tick}.
+ * #### `event()`: See {@link BaseStash.event}.
  *
  * ---
  *
  * @details
  *
- * While you can create any custom stash you fancy, it is recommended to use the included exposed stashes `sessionStash`
- * and `localStash`. This is because they are already implemented and are ready to use, otherwise you'd have to setup,
- * configuration and initialization.
+ * TODO
  */
-export class Stash implements StashImplementation {
+abstract class BaseStash implements StashImplementation {
     /**
      * @param own Object containing the stash's metadata.
      * @param own.persistence The persistence parameter defines if the stash should be persisted to local storage.
      * @param own.stashName The name of the stash, to be used as key for syncing with local storage.
      * @param own.stashId A UUID v4 string to uniquely identify the stash.
      * @param own.initTime The UNIX timestamp given by `Date()` when the stash was initialized.
+     * @param own.isCustom Flag that defines if the current stash is a custom call or managed by this lib.
+     * @param own.step Object that tracks both the starting and current "global" step on _this_ Stash.
      * @param events The events object contains all available events as of {@link stashEvent}.
      * This events can be fired arbitrarily by calling `dispatchEvent(Stash.events["eventName"])`.
      * @param entries The entries object contains all entries of the stash, and is initialized as an empty object,
      * given is a readonly property. See {@link StashRecord}.
-     *
-     * ---
+     * @param data Is the publicly exposed version of `.entries`.
      *
      * @usage
      *
@@ -147,37 +192,7 @@ export class Stash implements StashImplementation {
         }
     ) {
         this.entries = {};
-        this.events = {
-            add: (entryId: string, step: number) =>
-                stashEvent({
-                    stash: this.own.stashId,
-                    action: "add",
-                    entryId,
-                    step,
-                }),
-            transform: (entryId: string, step: number) =>
-                stashEvent({
-                    stash: this.own.stashId,
-                    action: "transform",
-                    entryId,
-                    step,
-                }),
-            set: (entryId: string, step: number) =>
-                stashEvent({
-                    stash: this.own.stashId,
-                    action: "set",
-                    entryId,
-                    step,
-                }),
-            deleteMutable: (entryId: string, step: number) =>
-                stashEvent({
-                    stash: this.own.stashId,
-                    action: "deleteMutable",
-                    entryId,
-                    step,
-                }),
-        };
-        petrify(this.events);
+        this.data = {};
     }
 
     /**
@@ -186,6 +201,7 @@ export class Stash implements StashImplementation {
      * used to construct a {@link StashRecord} object with a `writable()` store. (We don't use `readable()`
      * because the value should be accessed with the `.value` property of the entry.)
      * @template T The type of the value to add.
+     *
      * @usage
      *
      * Use a easy and unique ID and add the value you want as a second paramenter.
@@ -227,10 +243,10 @@ export class Stash implements StashImplementation {
      * 	subgraph add3 ["Use the initializer to setup the entry"]
      * 	    direction TB
      * 	    add3setup1("<tt>.latest</tt> will be initialized to\nthe current 'global' step") -->    add3setup2
-     * 	    add3setup2("<tt>.data.initializer.step</tt> will\nbe a clone of the current 'global' step") --> add3setup3
-     * 	    add3setup3("<tt>.data.initializer.timestamp</tt> will\ncontain the DateString of now") --> add3setup4
-     * 	    add3setup4("<tt>.data.initializer.value</tt> will\nbe the cloned initializer") --> add3setup5
-     * 	    add3setup5("<tt>.value</tt> will be a function pointing\nto <tt>.history.initializer.value</tt>") --> add3setup6
+     * 	    add3setup2("<tt>.records.initializer.step</tt> will\nbe a clone of the current 'global' step") --> add3setup3
+     * 	    add3setup3("<tt>.records.initializer.timestamp</tt> will\ncontain the DateString of now") --> add3setup4
+     * 	    add3setup4("<tt>.records.initializer.value</tt> will\nbe the cloned initializer") --> add3setup5
+     * 	    add3setup5("<tt>.value</tt> will be a function pointing\nto <tt>.records.initializer.value</tt>") --> add3setup6
      * 	    add3setup6("<tt>.store</tt> will contain a <tt>writable()</tt>\npointing exactly like <tt>.value</tt>") --> add3setup7
      *      add3setup7("<tt>.history</tt> will contain a function\npointing exactly like <tt>.value</tt>")
      * 	end
@@ -282,8 +298,8 @@ export class Stash implements StashImplementation {
         });
 
         // Dispatch the event and sync
-        dispatchEvent(this.events.add(id, this.own.step.current));
-        this.sync();
+        this.event("add", id, this.own.step.current);
+        this.syncAccessor(id);
     }
 
     /**
@@ -291,8 +307,6 @@ export class Stash implements StashImplementation {
      * @param value The value to set the entry to. This value _has_ to be the same type of the initializer.
      * The initializer is accessible at all times in the `entries` property, so you can always check what type it is.
      * @template T The type of the value to set.
-     *
-     * ---
      *
      * @usage
      *
@@ -341,8 +355,8 @@ export class Stash implements StashImplementation {
 
         // Tick the stash, dispatch events and sync
         this.tick();
-        dispatchEvent(this.events.set(id, this.own.step.current));
-        this.sync();
+        this.event("set", id, this.own.step.current);
+        this.syncAccessor(id);
     }
 
     /**
@@ -350,8 +364,6 @@ export class Stash implements StashImplementation {
      * @param transformation The transformation function to apply to the entry.
      * This function is called with the current value of the entry as only parameter.
      * @template T The type of the value to transform.
-     *
-     * ---
      *
      * @usage
      *
@@ -408,67 +420,17 @@ export class Stash implements StashImplementation {
 
         // Tick the stash, dispatch events and sync
         this.tick();
-        dispatchEvent(this.events.transform(id, this.own.step.current));
-        this.sync();
+        this.event("transform", id, this.own.step.current);
+        this.syncAccessor(id);
     }
-
     /**
-     * ### About:
-     *
-     * @param id The ID of the entry to delete. The ID is used as a key to access the entry.
-     *
-     * ---
-     *
-     * @usage
-     *
-     * Choose the ID of the entry to delete.
-     *
-     * ```typescript
-     * myStash.entries.myString.value; // "Hello World"
-     * myStash.delete("myString");
-     * myStash.entries.myString?.value; // undefined
-     * ```
-     *
-     * ---
-     *
-     * @details
-     *
-     * Deletions are made using the `delete` operator.
-     *
-     * Yes, we lied, this is not truly immutable, you can destroy entries as always. Try not to, tho.
-     *
-     * The thing is, you see, the immutable bits are the _contents_ of the entries, not the entries themselves.
-     * Those are just readonly.
+     * TODO Docs
      */
-    deleteMutable(id: string): void {
-        delete this.entries[id];
-        dispatchEvent(this.events.deleteMutable(id, this.own.step.current));
-        this.sync();
-    }
-
-    /**
-     * @usage
-     *
-     * Call the function. It will check the structure and config of the stash and behave accordingly.
-     *
-     * ```typescript
-     * myStash.sync();
-     * ```
-     *
-     * ---
-     *
-     * @details
-     *
-     * The stash will sync to a local storage entry with the key given by `.own.stashName`
-     */
-    sync(): void {
-        if (this.own.persistence === "local") {
-            localforage.setItem(
-                this.own.isCustom ? this.own.stashId : "localStash",
-                this
-            );
-        }
-    }
+    protected event(
+        eventType: keyof CustomAvailableEvents,
+        id: string,
+        step: number
+    ): void {}
 
     /**
      * This property allows you to interact with the stash entries, each entry being a {@link StashRecord}.
@@ -501,22 +463,19 @@ export class Stash implements StashImplementation {
      *
      * Accessing the store directly is mostly not needed, as the Stash provides methods for handling data.
      */
-    readonly entries: Record<string, StashRecord<unknown>>;
-
-    /**
-     * This property implements {@link AvailableEvents}, which in turn serves to
-     * implement {@link AvailableEventNames}
-     *
-     * Basically, it allows to dispatch a `CustomEvent` with the name of the used method, and the store data.
-     *
-     * Check out both of the relevant interfaces.
-     */
-    events: AvailableEvents;
+    readonly data: {
+        [x: string]: Pick<StashRecord<unknown>, "value" | "history">;
+    };
 
     /**
      * TODO Docs
      */
-    tick(): void {
+    protected readonly entries: Record<string, StashRecord<unknown>>;
+
+    /**
+     * TODO Docs
+     */
+    private tick(): void {
         Object.defineProperty(this.own, "step", {
             writable: true,
         });
@@ -528,6 +487,315 @@ export class Stash implements StashImplementation {
         Object.defineProperty(this.own, "step", {
             writable: false,
         });
+    }
+
+    /**
+     * TODO Docs
+     */
+    protected syncAccessor(entryId: string): void {}
+}
+
+/**
+ * @param events The events object contains all available events as of {@link stashEvent}.
+ * This events can be fired arbitrarily by calling `dispatchEvent(Stash.events["eventName"])`.
+ * @param sync Syncs the stash with local storage.
+ *
+ * @usage
+ *
+ * TODO
+ *
+ * ```typescript
+ * const myStash = new Stash();
+ * ```
+ *
+ * ---
+ *
+ * @properties
+ *
+ * #### `events`: See {@link Stash.events}.
+ *
+ * ---
+ *
+ * @methods
+ *
+ * #### `sync()`: See {@link Stash.sync}.
+ * #### `syncAccessor()`: See {@link Stash.sync}.
+ * #### `event()`: See {@link Stash.event}.
+ *
+ * ---
+ *
+ * @details
+ *
+ * TODO
+ */
+export class Stash extends BaseStash implements StashImplementation {
+    constructor() {
+        super();
+        this.events = {
+            add: (entryId: string, step: number) =>
+                stashEvent({
+                    stash: this.own.stashId,
+                    action: "add",
+                    entryId,
+                    step,
+                }),
+            transform: (entryId: string, step: number) =>
+                stashEvent({
+                    stash: this.own.stashId,
+                    action: "transform",
+                    entryId,
+                    step,
+                }),
+            set: (entryId: string, step: number) =>
+                stashEvent({
+                    stash: this.own.stashId,
+                    action: "set",
+                    entryId,
+                    step,
+                }),
+        };
+    }
+
+    /**
+     * @usage
+     *
+     * Call the function. It will check the structure and config of the stash and behave accordingly.
+     *
+     * ```typescript
+     * myStash.sync();
+     * ```
+     *
+     * ---
+     *
+     * @details
+     *
+     * The stash will sync to a local storage entry under a children object with key `.own.stashName`
+     */
+    private sync(entryId: string): void {
+        const dataRecord = {
+            value: this.entries[entryId].value,
+            history: this.entries[entryId].history,
+        };
+        this.data[entryId] = dataRecord;
+        if (this.own.persistence === "local") {
+            localforage.setItem(
+                this.own.isCustom ? this.own.stashId : "localStash",
+                this
+            );
+        }
+    }
+
+    /**
+     * TODO Docs
+     */
+    protected syncAccessor(entryId: string): void {
+        this.sync(entryId);
+    }
+
+    /**
+     * This property implements {@link AvailableEvents}.
+     *
+     * Basically, it allows to dispatch a `CustomEvent` with the name of the used method, and the store data.
+     *
+     * Check out the relevant type.
+     */
+    private events: AvailableEvents;
+
+    /**
+     * TODO Docs
+     */
+    protected event(
+        eventType: keyof AvailableEvents,
+        id: string,
+        step: number
+    ): void {
+        dispatchEvent(this.events[eventType](id, step));
+    }
+}
+
+/**
+ * @param events The events object contains all available events as of {@link stashEvent}.
+ * This events can be fired arbitrarily by calling `dispatchEvent(Stash.events["eventName"])`.
+ * @param DANGEROUSLY_deleteMutable Mutably deletes a entry from the stash.
+ * @param sync Syncs the stash with local storage.
+ *
+ * @usage
+ *
+ * TODO
+ *
+ * ```typescript
+ * const myCustomStash = new CustomStash(stashMetadata);
+ * ```
+ *
+ * ---
+ *
+ * @properties
+ *
+ * #### `events`: See {@link CustomStash.events}.
+ * #### `enableDeletion`: See {@link CustomStash.enableDeletion}.
+ *
+ * ---
+ *
+ * @methods
+ *
+ * #### `DANGEROUSLY_deleteMutable()`: See {@link CustomStash.DANGEROUSLY_deleteMutable}.
+ * #### `sync()`: See {@link CustomStash.sync}.
+ * #### `syncAccessor()`: See {@link CustomStash.sync}.
+ * #### `event()`: See {@link CustomStash.event}.
+ *
+ * ---
+ *
+ * @details
+ *
+ * TODO
+ */
+export class CustomStash
+    extends BaseStash
+    implements CustomStashImplementation
+{
+    /**
+     * TODO Docs
+     */
+    constructor(
+        public readonly own: StashOwnData,
+        enableDeletion: boolean = false
+    ) {
+        super(own);
+        this.enableDeletion = enableDeletion;
+        this.events = {
+            add: (entryId: string, step: number) =>
+                stashEvent({
+                    stash: this.own.stashId,
+                    action: "add",
+                    entryId,
+                    step,
+                }),
+            transform: (entryId: string, step: number) =>
+                stashEvent({
+                    stash: this.own.stashId,
+                    action: "transform",
+                    entryId,
+                    step,
+                }),
+            set: (entryId: string, step: number) =>
+                stashEvent({
+                    stash: this.own.stashId,
+                    action: "set",
+                    entryId,
+                    step,
+                }),
+            DANGEROUSLY_deleteMutable: (entryId: string, step: number) =>
+                stashEvent({
+                    stash: this.own.stashId,
+                    action: "DANGEROUSLY_deleteMutable",
+                    entryId,
+                    step,
+                }),
+        };
+    }
+
+    /**
+     * TODO Docs
+     */
+    protected enableDeletion: boolean;
+
+    /**
+     * This property implements {@link CustomAvailableEvents}.
+     *
+     * Basically, it allows to dispatch a `CustomEvent` with the name of the used method, and the store data.
+     *
+     * Check out the relevant type.
+     */
+    private events: CustomAvailableEvents;
+
+    /**
+     * @usage
+     *
+     * Call the function. It will check the structure and config of the stash and behave accordingly.
+     *
+     * ```typescript
+     * myStash.sync();
+     * ```
+     *
+     * ---
+     *
+     * @details
+     *
+     * The stash will sync to a local storage entry under a children object with key `.own.stashName`
+     */
+    public sync(entryId: string): void {
+        const dataRecord = {
+            value: this.entries[entryId].value,
+            history: this.entries[entryId].history,
+        };
+        this.data[entryId] = dataRecord;
+        if (this.own.persistence === "local") {
+            localforage.setItem(
+                this.own.isCustom ? this.own.stashId : "localStash",
+                this
+            );
+        }
+    }
+
+    /**
+     * TODO Docs
+     */
+    protected syncAccessor(entryId: string): void {
+        this.sync(entryId);
+    }
+
+    /**
+     * @param id The ID of the entry to delete. The ID is used as a key to access the entry.
+     *
+     * # !!! AVOID USE !!!
+     * ##### ------------ CAUTION ------------
+     * ## THIS WILL BREAK HISTORY AND TIME TRAVELING.
+     * ##### ------------ CAUTION ------------
+     *
+     * This exists only for the case where you reaaaally need to destroy some data, like some sensitive PII,
+     * secrets or whatever radioactive data like that.
+     * You should not store sensitive info here, anyways.
+     *
+     * ---
+     *
+     * @details
+     *
+     * Deletions are made using the `delete` operator.
+     *
+     * So what's the deal with that? Deletions on a immutable store?
+     *
+     * The immutable bits are the _contents_ of the entries, not the entries themselves.
+     * Those are just readonly.
+     *
+     * ---
+     *
+     * @usage
+     *
+     * Choose the ID of the entry to delete.
+     *
+     * ```typescript
+     * myStash.entries.myString.value; // "Hello World"
+     * myStash.delete("myString");
+     * myStash.entries.myString?.value; // undefined
+     * ```
+     */
+    public DANGEROUSLY_deleteMutable(id: string): void {
+        if (this.enableDeletion) {
+            delete this.entries[id];
+            this.event("DANGEROUSLY_deleteMutable", id, this.own.step.current);
+            this.syncAccessor(id);
+        }
+    }
+
+    /**
+     * TODO Docs
+     */
+    protected event(
+        eventType: keyof CustomAvailableEvents,
+        id: string,
+        step: number
+    ): void {
+        dispatchEvent(this.events[eventType](id, step));
     }
 }
 
@@ -544,42 +812,22 @@ export let localStash: Stash;
 /**
  * TODO Docs
  */
-export const init = async (name: string = "localStash"): Promise<void> => {
+export const initializeStashes = async (
+    name: string = "localStash"
+): Promise<void> => {
     // HACK We should be using a TS parsing library (like Zod) to test if the type is correct
     sessionStash = new Stash();
     const init = (await localforage.getItem(name)) as Stash;
     if (init) {
-        localStash =
-            init ??
-            new Stash({
-                persistence: "local",
-                isCustom: name !== "localStash" ? true : false,
-                stashName: name,
-                stashId: UUID(),
-                initTime: new Date().toDateString(),
-                step: {
-                    current: 0,
-                    initial: 0,
-                },
-            });
+        localStash = init ?? new Stash();
     }
 };
 
 /**
  * TODO Docs
  */
-export const purge = (): void => {
+export const purgeStashes = (): void => {
     sessionStash = new Stash();
-    localStash = new Stash({
-        persistence: "local",
-        isCustom: false,
-        stashName: "localStash",
-        stashId: UUID(),
-        initTime: new Date().toDateString(),
-        step: {
-            current: 0,
-            initial: 0,
-        },
-    });
-    localStash.sync();
+    localStash = new Stash();
+    localStash.add("initializingPlaceholder", "");
 };
