@@ -1,5 +1,6 @@
 .husky/
 .vscode/
+.github/
 coverage/
 tests/
 CODEOWNERS
