@@ -4,8 +4,8 @@
  * @module TypesModule
  */
 
-import type { Immutable } from "immer";
-import type { Writable } from "svelte/store";
+import type { Immutable } from "immer"
+import type { Writable } from "svelte/store"
 
 /**
  * ### About
@@ -18,10 +18,10 @@ import type { Writable } from "svelte/store";
  * @param step The integer value that represents this entry.
  */
 export type EntryRecord<T> = {
-    value: T;
-    timestamp: string;
-    step: number;
-};
+	value: T
+	timestamp: string
+	step: number
+}
 
 /**
  * ### About
@@ -40,131 +40,125 @@ export type EntryRecord<T> = {
  * @param latest Number that represents the latest step of the entry.
  */
 export type StashRecord<T> = {
-    value: () => Immutable<T>;
-    readonly records: {
-        initializer: Immutable<EntryRecord<T>>;
-        [x: string]: Immutable<EntryRecord<T>>;
-    };
-    readonly history: StashRecord<T>["value"][];
-    store: Immutable<Writable<StashRecord<T>["value"]>>;
-    latest: number;
-};
-
-/**
- * TODO Docs
- */
-export interface StashEventDetail {
-    /**
-     * TODO Docs
-     */
-    stash: string;
-
-    /**
-     * TODO Docs
-     */
-    action: keyof CoreStashImplementation | keyof CustomStashImplementation;
-
-    /**
-     * TODO Docs
-     */
-    id: string;
-
-    /**
-     * TODO Docs
-     */
-    step: number;
+	value: () => Immutable<T>
+	readonly records: {
+		initializer: Immutable<EntryRecord<T>>
+		[x: string]: Immutable<EntryRecord<T>>
+	}
+	readonly history: StashRecord<T>["value"][]
+	store: Immutable<Writable<StashRecord<T>["value"]>>
+	latest: number
 }
 
 /**
  * TODO Docs
  */
-export interface StashEvent extends CustomEvent<StashEventDetail> {}
+export interface StashEventDetail {
+	/**
+	 * TODO Docs
+	 */
+	stash: string
+
+	/**
+	 * TODO Docs
+	 */
+	action: keyof CoreStashImplementation | keyof CustomStashImplementation
+
+	/**
+	 * TODO Docs
+	 */
+	id: string
+
+	/**
+	 * TODO Docs
+	 */
+	step: number
+}
+
+/**
+ * TODO Docs
+ */
+export type StashEvent = CustomEvent<StashEventDetail>
 
 /**
  * TODO Docs
  */
 export interface StashOwnData {
-    readonly persistence: "local" | "session";
-    readonly stashName: string;
-    readonly isCustom: boolean;
-    readonly stashId: string;
-    readonly initTime: string;
-    step: Immutable<{
-        current: number;
-        initial: number;
-    }>;
+	readonly persistence: "local" | "session"
+	readonly stashName: string
+	readonly isCustom: boolean
+	readonly stashId: string
+	readonly initTime: string
+	step: Immutable<{
+		current: number
+		initial: number
+	}>
 }
 
 /**
  * TODO Docs
  */
 interface CoreStashImplementation {
-    /**
-     * TODO Docs
-     */
-    add<T>(id: string, entry: T): void;
+	/**
+	 * TODO Docs
+	 */
+	add<T>(id: string, entry: T): void
 
-    /**
-     * TODO Docs
-     */
-    set<T>(id: string, value: T): void;
+	/**
+	 * TODO Docs
+	 */
+	set<T>(id: string, value: T): void
 
-    /**
-     * TODO Docs
-     */
-    transform<T>(id: string, transformation: (data: T) => T): void;
+	/**
+	 * TODO Docs
+	 */
+	transform<T>(id: string, transformation: (data: T) => T): void
 }
 
 /**
  * TODO Docs
  */
 interface CoreCustomStashImplementation extends CoreStashImplementation {
-    /**
-     * TODO Docs
-     */
-    DANGEROUSLY_deleteMutable(id: string): void;
+	/**
+	 * TODO Docs
+	 */
+	DANGEROUSLY_deleteMutable(id: string): void
 }
 
 /**
  * TODO Docs
  */
 export interface StashImplementation extends CoreStashImplementation {
-    /**
-     * TODO Docs
-     */
-    readonly data: {
-        [x: string]: Pick<StashRecord<unknown>, "value" | "history">;
-    };
+	/**
+	 * TODO Docs
+	 */
+	readonly data: {
+		[x: string]: Pick<StashRecord<unknown>, "value" | "history">
+	}
 
-    /**
-     * TODO Docs
-     */
-    own?: StashOwnData;
+	/**
+	 * TODO Docs
+	 */
+	own?: StashOwnData
 }
 
 /**
  * TODO Docs
  */
 export interface CustomStashImplementation
-    extends StashImplementation,
-        CoreCustomStashImplementation {}
+	extends StashImplementation,
+		CoreCustomStashImplementation {}
 
 /**
  * TODO Docs
  */
 export type AvailableEvents = {
-    [K in keyof CoreStashImplementation]: (
-        id: string,
-        step: number
-    ) => StashEvent;
-};
+	[K in keyof CoreStashImplementation]: (id: string, step: number) => StashEvent
+}
 
 /**
  * TODO Docs
  */
 export type CustomAvailableEvents = {
-    [K in keyof CoreCustomStashImplementation]: (
-        id: string,
-        step: number
-    ) => StashEvent;
-};
+	[K in keyof CoreCustomStashImplementation]: (id: string, step: number) => StashEvent
+}
