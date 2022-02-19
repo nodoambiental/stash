@@ -1,65 +1,71 @@
 {
-    "name": "stash",
-    "version": "0.2.0",
-    "description": "Svelte custom store manager",
-    "main": "dist/index.js",
-    "scripts": {
-        "test": "nyc karma start karma.config.js",
-        "build:docs:mermaid": "tsc tooling/docs.ts; node tooling/docs.js",
-        "build:docs": "typedoc",
-        "build:dry": "tsc src/**.ts"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/nodoambiental/stash.git"
-    },
-    "keywords": [
-        "svelte",
-        "store",
-        "node",
-        "typescript"
-    ],
-    "author": "Ágata Ordano",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/nodoambiental/stash/issues"
-    },
-    "homepage": "https://github.com/nodoambiental/stash#readme",
-    "devDependencies": {
-        "@commitlint/cli": "^16.0.1",
-        "@commitlint/config-conventional": "^16.0.0",
-        "@commitlint/cz-commitlint": "^16.0.0",
-        "@istanbuljs/nyc-config-typescript": "^1.0.2",
-        "@types/jasmine": "^3.10.3",
-        "@types/uuid": "^8.3.4",
-        "chalk": "^5.0.0",
-        "commitizen": "^4.2.4",
-        "husky": "^7.0.4",
-        "jasmine-core": "^4.0.0",
-        "karma-chrome-launcher": "^3.1.0",
-        "karma-firefox-launcher": "^2.1.2",
-        "karma-jasmine": "^4.0.1",
-        "karma-typescript": "^5.5.3",
-        "mock-local-storage": "^1.1.20",
-        "typedoc": "^0.22.10",
-        "typedoc-plugin-extras": "^2.2.3",
-        "typedoc-plugin-inline-sources": "^1.0.1",
-        "typedoc-plugin-mdn-links": "^1.0.5",
-        "typedoc-plugin-mermaid": "^1.6.0",
-        "typedoc-plugin-missing-exports": "^0.22.6",
-        "typescript": "^4.5.4"
-    },
-    "config": {
-        "commitizen": {
-            "path": "@commitlint/cz-commitlint"
-        }
-    },
-    "dependencies": {
-        "immer": "^9.0.12",
-        "localforage": "^1.10.0",
-        "nyc": "^15.1.0",
-        "svelte": "^3.44.3",
-        "uuid": "^8.3.2"
-    },
-    "types": "dist/index.d.ts"
+	"name": "stash",
+	"version": "0.2.0",
+	"description": "Svelte custom store manager",
+	"main": "dist/index.js",
+	"scripts": {
+		"test": "nyc karma start karma.config.js",
+		"build:docs:mermaid": "tsc tooling/docs.ts; node tooling/docs.js",
+		"build:docs": "typedoc",
+		"build:dry": "tsc src/**.ts"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nodoambiental/stash.git"
+	},
+	"keywords": [
+		"svelte",
+		"store",
+		"node",
+		"typescript"
+	],
+	"author": "Ágata Ordano",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/nodoambiental/stash/issues"
+	},
+	"homepage": "https://github.com/nodoambiental/stash#readme",
+	"devDependencies": {
+		"@commitlint/cli": "^16.0.1",
+		"@commitlint/config-conventional": "^16.0.0",
+		"@commitlint/cz-commitlint": "^16.0.0",
+		"@istanbuljs/nyc-config-typescript": "^1.0.2",
+		"@types/jasmine": "^3.10.3",
+		"@types/uuid": "^8.3.4",
+		"@typescript-eslint/eslint-plugin": "^4.31.1",
+		"@typescript-eslint/parser": "^4.31.1",
+		"chalk": "^5.0.0",
+		"commitizen": "^4.2.4",
+		"eslint": "^7.32.0",
+		"eslint-config-prettier": "^8.3.0",
+		"eslint-plugin-fp-ts": "^0.3.0",
+		"husky": "^7.0.4",
+		"jasmine-core": "^4.0.0",
+		"karma-chrome-launcher": "^3.1.0",
+		"karma-firefox-launcher": "^2.1.2",
+		"karma-jasmine": "^4.0.1",
+		"karma-typescript": "^5.5.3",
+		"mock-local-storage": "^1.1.20",
+		"typedoc": "^0.22.10",
+		"typedoc-plugin-extras": "^2.2.3",
+		"typedoc-plugin-inline-sources": "^1.0.1",
+		"typedoc-plugin-mdn-links": "^1.0.5",
+		"typedoc-plugin-mermaid": "^1.6.0",
+		"typedoc-plugin-missing-exports": "^0.22.6",
+		"typescript": "^4.5.4"
+	},
+	"config": {
+		"commitizen": {
+			"path": "@commitlint/cz-commitlint"
+		}
+	},
+	"dependencies": {
+		"fp-ts": "^2.11.8",
+		"immer": "^9.0.12",
+		"localforage": "^1.10.0",
+		"nyc": "^15.1.0",
+		"svelte": "^3.44.3",
+		"uuid": "^8.3.2"
+	},
+	"types": "dist/index.d.ts"
 }
