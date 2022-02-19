@@ -44,7 +44,7 @@ import {
     CustomStashImplementation,
     CustomAvailableEvents,
 } from "./types";
-import { cleanupKey, clone, petrify } from "./util";
+import { cleanupKey, clone, transform } from "./util";
 import localforage from "localforage";
 import PackageConfig from "../package.json";
 import { v4 as uuid } from "uuid";
@@ -271,7 +271,7 @@ abstract class BaseStash implements StashImplementation {
         this.tick();
 
         // Get a immutable, reference-less initializer.
-        const copiedInitializer = petrify(entryInitializer);
+        const copiedInitializer = clone(entryInitializer);
 
         // Setup the entry and include it in the stash
         const storeEntry: StashRecord<T> = {
@@ -350,7 +350,7 @@ abstract class BaseStash implements StashImplementation {
         this.entries[cleanId].store.update(() => newPointer);
 
         // Update pointer target
-        this.entries[cleanId].records[`val${this.own.step.current}`] = petrify({
+        this.entries[cleanId].records[`val${this.own.step.current}`] = clone({
             value,
             timestamp: new Date().toDateString(),
             step: parseInt(this.own.step.current.toString(), 10),
@@ -417,9 +417,12 @@ abstract class BaseStash implements StashImplementation {
         this.entries[cleanId].store.update(() => newPointer);
 
         // Update pointer target
-        this.entries[cleanId].records[`val${this.own.step.current}`] = petrify({
+        this.entries[cleanId].records[`val${this.own.step.current}`] = clone({
             // HACK Add type parsing to the system
-            value: transformation(this.entries[cleanId].value() as T),
+            value: transform(
+                this.entries[cleanId].value() as T,
+                transformation
+            ),
             timestamp: new Date().toDateString(),
             step: parseInt(this.own.step.current.toString(), 10),
         });

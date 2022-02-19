@@ -1,19 +1,20 @@
-import { produce, Immutable, freeze } from "immer";
+import { produce, Immutable, freeze, castImmutable } from "immer";
 
 /**
  * TODO Docs
  */
-export const clone = <T>(source: T): T => {
-    return produce(source, (draftState) => {
-        return draftState;
-    });
+export const clone = <T>(source: T): Immutable<T> => {
+    return castImmutable(produce(freeze(source, true), (draft) => {}));
 };
 
 /**
  * TODO Docs
  */
-export const petrify = <T>(obj: T): Immutable<T> => {
-    return freeze(clone(obj), true) as Immutable<T>;
+export const transform = <T>(
+    source: T,
+    transform: (source: T) => T
+): Immutable<T> => {
+    return castImmutable(produce(freeze(source, true), transform));
 };
 
 /**
