@@ -5,6 +5,7 @@
 	"main": "dist/index.js",
 	"scripts": {
 		"test": "nyc karma start karma.config.js",
+		"test:ci": "nyc karma start karma.config.js --no-watch --no-progress --browsers=ChromeHeadlessCI",
 		"build:docs:mermaid": "tsc tooling/docs.ts; node tooling/docs.js",
 		"build:docs": "typedoc",
 		"build:dry": "tsc src/**.ts"
