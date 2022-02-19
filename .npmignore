@@ -12,3 +12,7 @@ karma.config.json
 TODO.md
 typedoc.json
 .nycrc
+.git-blame-ignore-revs
+.eslintrc.js
+.prettierrc
+README.md
